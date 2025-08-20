@@ -354,10 +354,19 @@ class FeePaymentManager {
                         discountAmountInput.value = 100;
                         Utils.showToast('Percentage discount cannot exceed 100%', 'warning');
                     }
+                const endingMonth = enrollment.endingMonthId ? window.storageManager.getMonthById(enrollment.endingMonthId) : null;
+                
                     actualDiscountAmount = (discountableAmount * percentage) / 100;
-                } else {
+                    let availableMonths = allCourseMonths.filter(month => 
                     // Fixed amount discount - cannot exceed discountable amount
                     actualDiscountAmount = Math.min(discountInputValue, discountableAmount);
+                    
+                    // If ending month is specified, filter out months after it
+                    if (endingMonth) {
+                        availableMonths = availableMonths.filter(month => 
+                            (month.monthNumber || 0) <= (endingMonth.monthNumber || 0)
+                        );
+                    }
                     
                     if (discountInputValue > discountableAmount) {
                         Utils.showToast(`Discount limited to ${Utils.formatCurrency(discountableAmount)} (maximum applicable amount)`, 'warning');

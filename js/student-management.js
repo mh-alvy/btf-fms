@@ -225,6 +225,11 @@ class StudentManagementManager {
                             <option value="">Select Starting Month</option>
                             ${monthOptions}
                         </select>
+                        <label for="endMonth_${course.id}">Ending Month (Optional):</label>
+                        <select id="endMonth_${course.id}">
+                            <option value="">No End Date</option>
+                            ${monthOptions}
+                        </select>
                     </div>
                 </div>
             `;
@@ -250,12 +255,19 @@ class StudentManagementManager {
         courseCheckboxes.forEach(checkbox => {
             const courseId = checkbox.value;
             const startingMonthId = document.getElementById(`startMonth_${courseId}`).value;
+            const endingMonthId = document.getElementById(`endMonth_${courseId}`).value;
             
             if (startingMonthId) {
-                enrolledCourses.push({
+                const enrollment = {
                     courseId,
                     startingMonthId
-                });
+                };
+                
+                if (endingMonthId) {
+                    enrollment.endingMonthId = endingMonthId;
+                }
+                
+                enrolledCourses.push(enrollment);
             }
         });
         
@@ -269,12 +281,19 @@ class StudentManagementManager {
         courseCheckboxes.forEach(checkbox => {
             const courseId = checkbox.value;
             const startingMonthId = document.getElementById(`editStartMonth_${courseId}`).value;
+            const endingMonthId = document.getElementById(`editEndMonth_${courseId}`).value;
             
             if (startingMonthId) {
-                enrolledCourses.push({
+                const enrollment = {
                     courseId,
                     startingMonthId
-                });
+                };
+                
+                if (endingMonthId) {
+                    enrollment.endingMonthId = endingMonthId;
+                }
+                
+                enrolledCourses.push(enrollment);
             }
         });
         
@@ -340,11 +359,20 @@ class StudentManagementManager {
                     
                     if (enrollment.startingMonthId) {
                         const startingMonth = window.storageManager.getMonthById(enrollment.startingMonthId);
+                        const endingMonth = enrollment.endingMonthId ? window.storageManager.getMonthById(enrollment.endingMonthId) : null;
+                        
                         if (startingMonth) {
                             // Only include months from starting month onwards
-                            const applicableMonths = allCourseMonths.filter(month => 
+                            let applicableMonths = allCourseMonths.filter(month => 
                                 (month.monthNumber || 0) >= (startingMonth.monthNumber || 0)
                             );
+                            
+                            // If ending month is specified, filter out months after it
+                            if (endingMonth) {
+                                applicableMonths = applicableMonths.filter(month => 
+                                    (month.monthNumber || 0) <= (endingMonth.monthNumber || 0)
+                                );
+                            }
                             
                             applicableMonths.forEach(month => {
                                 totalDue += month.payment;
@@ -462,10 +490,19 @@ class StudentManagementManager {
                         
                         if (enrollment.startingMonthId) {
                             const startingMonth = window.storageManager.getMonthById(enrollment.startingMonthId);
+                            const endingMonth = enrollment.endingMonthId ? window.storageManager.getMonthById(enrollment.endingMonthId) : null;
+                            
                             if (startingMonth) {
-                                const applicableMonths = allCourseMonths.filter(month => 
+                                let applicableMonths = allCourseMonths.filter(month => 
                                     (month.monthNumber || 0) >= (startingMonth.monthNumber || 0)
                                 );
+                                
+                                // If ending month is specified, filter out months after it
+                                if (endingMonth) {
+                                    applicableMonths = applicableMonths.filter(month => 
+                                        (month.monthNumber || 0) <= (endingMonth.monthNumber || 0)
+                                    );
+                                }
                                 
                                 applicableMonths.forEach(month => {
                                     const monthPayment = window.storageManager.getMonthPaymentDetails(student.id)[month.id];
@@ -628,6 +665,9 @@ class StudentManagementManager {
                             const monthOptions = months.map(month => 
                                 `<option value="${month.id}" ${enrollment && enrollment.startingMonthId === month.id ? 'selected' : ''}>${month.name}</option>`
                             ).join('');
+                            const endMonthOptions = months.map(month => 
+                                `<option value="${month.id}" ${enrollment && enrollment.endingMonthId === month.id ? 'selected' : ''}>${month.name}</option>`
+                            ).join('');
                             
                             return `
                                 <div class="course-enrollment-item">
@@ -640,6 +680,11 @@ class StudentManagementManager {
                                         <select id="editStartMonth_${course.id}">
                                             <option value="">Select Starting Month</option>
                                             ${monthOptions}
+                                        </select>
+                                        <label for="editEndMonth_${course.id}">Ending Month (Optional):</label>
+                                        <select id="editEndMonth_${course.id}">
+                                            <option value="">No End Date</option>
+                                            ${endMonthOptions}
                                         </select>
                                     </div>
                                 </div>

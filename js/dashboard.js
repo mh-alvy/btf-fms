@@ -64,11 +64,20 @@ class DashboardManager {
                     
                     if (enrollment.startingMonthId) {
                         const startingMonth = window.storageManager.getMonthById(enrollment.startingMonthId);
+                        const endingMonth = enrollment.endingMonthId ? window.storageManager.getMonthById(enrollment.endingMonthId) : null;
+                        
                         if (startingMonth) {
                             // Only include months from starting month onwards
-                            const applicableMonths = allCourseMonths.filter(month => 
+                            let applicableMonths = allCourseMonths.filter(month => 
                                 (month.monthNumber || 0) >= (startingMonth.monthNumber || 0)
                             );
+                            
+                            // If ending month is specified, filter out months after it
+                            if (endingMonth) {
+                                applicableMonths = applicableMonths.filter(month => 
+                                    (month.monthNumber || 0) <= (endingMonth.monthNumber || 0)
+                                );
+                            }
                             
                             applicableMonths.forEach(month => {
                                 // Only count as unpaid due if this month hasn't been paid for
