@@ -192,9 +192,18 @@ class FeePaymentManager {
             // Get starting month and filter months from that point onwards
             const startingMonth = window.storageManager.getMonthById(enrollment.startingMonthId);
             if (startingMonth) {
-                const availableMonths = allCourseMonths.filter(month => 
+                const endingMonth = enrollment.endingMonthId ? window.storageManager.getMonthById(enrollment.endingMonthId) : null;
+                
+                let availableMonths = allCourseMonths.filter(month => 
                     (month.monthNumber || 0) >= (startingMonth.monthNumber || 0)
                 );
+                
+                // If ending month is specified, filter out months after it
+                if (endingMonth) {
+                    availableMonths = availableMonths.filter(month => 
+                        (month.monthNumber || 0) <= (endingMonth.monthNumber || 0)
+                    );
+                }
                 
                 availableMonths.forEach(month => {
                     allMonths.push({
@@ -354,19 +363,11 @@ class FeePaymentManager {
                         discountAmountInput.value = 100;
                         Utils.showToast('Percentage discount cannot exceed 100%', 'warning');
                     }
-                const endingMonth = enrollment.endingMonthId ? window.storageManager.getMonthById(enrollment.endingMonthId) : null;
-                
+                    
                     actualDiscountAmount = (discountableAmount * percentage) / 100;
-                    let availableMonths = allCourseMonths.filter(month => 
+                } else {
                     // Fixed amount discount - cannot exceed discountable amount
                     actualDiscountAmount = Math.min(discountInputValue, discountableAmount);
-                    
-                    // If ending month is specified, filter out months after it
-                    if (endingMonth) {
-                        availableMonths = availableMonths.filter(month => 
-                            (month.monthNumber || 0) <= (endingMonth.monthNumber || 0)
-                        );
-                    }
                     
                     if (discountInputValue > discountableAmount) {
                         Utils.showToast(`Discount limited to ${Utils.formatCurrency(discountableAmount)} (maximum applicable amount)`, 'warning');
