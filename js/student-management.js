@@ -9,7 +9,8 @@ class StudentManagementManager {
         if (this.isInitialized) return;
         this.isInitialized = true;
         this.bindEvents();
-        this.refresh();
+        this.refreshAddStudentPage();
+        this.refreshStudentDatabase();
     }
 
     bindEvents() {
@@ -43,6 +44,37 @@ class StudentManagementManager {
         if (paymentFilter) {
             paymentFilter.addEventListener('change', () => {
                 this.filterStudents();
+            });
+        }
+
+        // Advanced filter events
+        const batchFilter = document.getElementById('batchFilter');
+        if (batchFilter) {
+            batchFilter.addEventListener('change', () => {
+                this.updateCourseFilter();
+                this.filterStudents();
+            });
+        }
+
+        const courseFilter = document.getElementById('courseFilter');
+        if (courseFilter) {
+            courseFilter.addEventListener('change', () => {
+                this.updateMonthFilter();
+                this.filterStudents();
+            });
+        }
+
+        const monthFilter = document.getElementById('monthFilter');
+        if (monthFilter) {
+            monthFilter.addEventListener('change', () => {
+                this.filterStudents();
+            });
+        }
+
+        const clearFilters = document.getElementById('clearFilters');
+        if (clearFilters) {
+            clearFilters.addEventListener('click', () => {
+                this.clearAllFilters();
             });
         }
     }
@@ -126,10 +158,14 @@ class StudentManagementManager {
         }
     }
 
-    refresh() {
+    refreshAddStudentPage() {
         this.loadInstitutions();
         this.updateInstitutionDropdown();
         this.updateBatchDropdown();
+    }
+
+    refreshStudentDatabase() {
+        this.updateFilterDropdowns();
         this.loadStudents();
     }
 

@@ -60,7 +60,8 @@
             <div class="nav-content">
                 <button class="nav-item active" data-page="dashboard">Dashboard</button>
                 <button class="nav-item" data-page="manage-batch" data-roles="admin,developer">Manage Batch</button>
-                <button class="nav-item" data-page="manage-students">Manage Students</button>
+                <button class="nav-item" data-page="add-student">Add Student</button>
+                <button class="nav-item" data-page="manage-students">Student Database</button>
                 <button class="nav-item" data-page="pay-fee">Pay Fee</button>
                 <button class="nav-item" data-page="reports" data-roles="admin,developer">Reports</button>
                 <button class="nav-item" data-page="discount-reports" data-roles="admin,developer">Discount Reports</button>
@@ -203,32 +204,12 @@
                 </div>
             </section>
 
-            <!-- Manage Students -->
-            <section id="manage-students" class="page">
+            <!-- Add Student -->
+            <section id="add-student" class="page">
                 <div class="page-header">
-                    <h2>Manage Students</h2>
+                    <h2>Add Student</h2>
                 </div>
                 <div class="management-grid">
-                    <!-- Create Institution -->
-                    <div class="management-card">
-                        <h3>Create Institution</h3>
-                        <form id="createInstitutionForm">
-                            <div class="form-group">
-                                <label for="institutionName">Institution Name</label>
-                                <input type="text" id="institutionName" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="institutionAddress">Institution Address</label>
-                                <textarea id="institutionAddress" required></textarea>
-                            </div>
-                            <button type="submit" class="btn btn-primary">Create Institution</button>
-                        </form>
-                        <div class="entity-list">
-                            <h4>Existing Institutions</h4>
-                            <div id="institutionList"></div>
-                        </div>
-                    </div>
-
                     <!-- Add Student -->
                     <div class="management-card full-width">
                         <h3>Add Student</h3>
@@ -289,20 +270,60 @@
                         </form>
                     </div>
                 </div>
+            </section>
 
-                <!-- Students List -->
+            <!-- Manage Students -->
+            <section id="manage-students" class="page">
+                <div class="page-header">
+                    <h2>Manage Students</h2>
+                </div>
+
+                <div class="management-grid">
+                    <!-- Create Institution -->
+                    <div class="management-card">
+                        <h3>Create Institution</h3>
+                        <form id="createInstitutionForm">
+                            <div class="form-group">
+                                <label for="institutionName">Institution Name</label>
+                                <input type="text" id="institutionName" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="institutionAddress">Institution Address</label>
+                                <textarea id="institutionAddress" required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Create Institution</button>
+                        </form>
+                        <div class="entity-list">
+                            <h4>Existing Institutions</h4>
+                            <div id="institutionList"></div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="students-section">
                     <div class="section-header">
-                        <h3>Students List</h3>
+                        <h3>All Students</h3>
                         <div class="filter-controls">
                             <input type="text" id="studentSearch" placeholder="Search students...">
+                            <select id="batchFilter">
+                                <option value="">All Batches</option>
+                            </select>
+                            <select id="courseFilter">
+                                <option value="">All Courses</option>
+                            </select>
+                            <select id="monthFilter">
+                                <option value="">All Months</option>
+                            </select>
                             <select id="paymentFilter">
                                 <option value="all">All Students</option>
                                 <option value="paid">Paid</option>
+                                <option value="partial">Partial</option>
                                 <option value="unpaid">Unpaid</option>
                             </select>
+                            <button id="clearFilters" class="btn btn-outline">Clear Filters</button>
                         </div>
                     </div>
+                    <div class="filter-summary" id="filterSummary"></div>
                     <div id="studentsList" class="students-list"></div>
                 </div>
             </section>
