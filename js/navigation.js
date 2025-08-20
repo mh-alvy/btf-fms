@@ -86,14 +86,9 @@ class NavigationManager {
             case 'manage-batch':
                 window.batchManager?.refresh();
                 break;
-            case 'add-student':
-                if (window.studentManager) {
-                    window.studentManager.refreshAddStudentPage();
-                }
-                break;
             case 'manage-students':
                 if (window.studentManager) {
-                    window.studentManager.refreshStudentDatabase();
+                    window.studentManager.refresh();
                 }
                 break;
             case 'pay-fee':
