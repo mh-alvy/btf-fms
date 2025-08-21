@@ -122,7 +122,6 @@ class StudentManagementManager {
             Utils.showToast(`Student added successfully with ID: ${student.studentId}`, 'success');
             document.getElementById('addStudentForm').reset();
             this.clearCourseSelection();
-            this.loadStudents();
         }
     }
 
@@ -130,7 +129,6 @@ class StudentManagementManager {
         this.loadInstitutions();
         this.updateInstitutionDropdown();
         this.updateBatchDropdown();
-        this.loadStudents();
     }
 
     loadInstitutions() {
@@ -317,219 +315,6 @@ class StudentManagementManager {
         if (courseSelectionDiv) {
             courseSelectionDiv.innerHTML = '<p>Please select a batch first</p>';
         }
-    }
-
-    loadStudents() {
-        const studentsList = document.getElementById('studentsList');
-        if (!studentsList) return;
-
-        const students = window.storageManager.getStudents();
-        
-        if (students.length === 0) {
-            studentsList.innerHTML = '<p class="text-center">No students added yet</p>';
-            return;
-        }
-
-        this.renderStudents(students);
-    }
-
-    renderStudents(students) {
-        const studentsList = document.getElementById('studentsList');
-        if (!studentsList) return;
-
-        studentsList.innerHTML = students.map(student => {
-            const institution = window.storageManager.getInstitutionById(student.institutionId);
-            const batch = window.storageManager.getBatchById(student.batchId);
-            const payments = window.storageManager.getPaymentsByStudent(student.id);
-            
-            // Calculate total paid and which months have been paid for
-            const totalPaid = payments.reduce((sum, payment) => sum + payment.paidAmount, 0);
-            
-            // Get detailed month payment information
-            const monthPaymentDetails = window.storageManager.getMonthPaymentDetails(student.id);
-            
-            // Calculate total due for this student based on enrolled courses and starting months
-            let totalDue = 0;
-            let unpaidDue = 0;
-            
-            if (student.enrolledCourses && student.enrolledCourses.length > 0) {
-                student.enrolledCourses.forEach(enrollment => {
-                    const allCourseMonths = window.storageManager.getMonthsByCourse(enrollment.courseId)
-                        .sort((a, b) => (a.monthNumber || 0) - (b.monthNumber || 0));
-                    
-                    if (enrollment.startingMonthId) {
-                        const startingMonth = window.storageManager.getMonthById(enrollment.startingMonthId);
-                        const endingMonth = enrollment.endingMonthId ? window.storageManager.getMonthById(enrollment.endingMonthId) : null;
-                        
-                        if (startingMonth) {
-                            // Only include months from starting month onwards
-                            let applicableMonths = allCourseMonths.filter(month => 
-                                (month.monthNumber || 0) >= (startingMonth.monthNumber || 0)
-                            );
-                            
-                            // If ending month is specified, filter out months after it
-                            if (endingMonth) {
-                                applicableMonths = applicableMonths.filter(month => 
-                                    (month.monthNumber || 0) <= (endingMonth.monthNumber || 0)
-                                );
-                            }
-                            
-                            applicableMonths.forEach(month => {
-                                totalDue += month.payment;
-                                // Only count as unpaid due if this month hasn't been paid for
-                                const monthPayment = monthPaymentDetails[month.id];
-                                if (!monthPayment) {
-                                    // No payment made for this month
-                                    unpaidDue += month.payment;
-                                } else {
-                                    // Partial payment made, calculate remaining due
-                                    const remainingDue = Math.max(0, month.payment - monthPayment.totalPaid - monthPayment.totalDiscount);
-                                    if (remainingDue > 0) {
-                                        unpaidDue += remainingDue;
-                                    }
-                                }
-                            });
-                        }
-                    }
-                });
-            }
-
-            const paymentStatus = unpaidDue <= 0 ? 'paid' : totalPaid > 0 ? 'partial' : 'unpaid';
-            const statusText = unpaidDue <= 0 ? 'Paid' : totalPaid > 0 ? 'Partial' : 'Unpaid';
-
-            return `
-                <div class="student-card">
-                    <div class="student-header">
-                        <div class="student-basic-info">
-                            <h4>${student.name}</h4>
-                            <div class="student-id">ID: ${student.studentId}</div>
-                        </div>
-                        <div class="student-actions">
-                            <span class="payment-status ${paymentStatus}">${statusText}</span>
-                            <button class="btn btn-small btn-outline" onclick="studentManager.editStudent('${student.id}')">
-                                Edit
-                            </button>
-                            <button class="btn btn-small btn-danger" onclick="studentManager.deleteStudent('${student.id}')">
-                                Delete
-                            </button>
-                        </div>
-                    </div>
-                    <div class="student-details">
-                        <div class="detail-item">
-                            <div class="detail-label">Institution</div>
-                            <div class="detail-value">${institution?.name || 'Unknown'}</div>
-                        </div>
-                        <div class="detail-item">
-                            <div class="detail-label">Batch</div>
-                            <div class="detail-value">${batch?.name || 'Unknown'}</div>
-                        </div>
-                        <div class="detail-item">
-                            <div class="detail-label">Gender</div>
-                            <div class="detail-value">${student.gender}</div>
-                        </div>
-                        <div class="detail-item">
-                            <div class="detail-label">Phone</div>
-                            <div class="detail-value">${student.phone}</div>
-                        </div>
-                        <div class="detail-item">
-                            <div class="detail-label">Guardian</div>
-                            <div class="detail-value">${student.guardianName}</div>
-                        </div>
-                        <div class="detail-item">
-                            <div class="detail-label">Guardian Phone</div>
-                            <div class="detail-value">${student.guardianPhone}</div>
-                        </div>
-                        <div class="detail-item">
-                            <div class="detail-label">Total Paid</div>
-                            <div class="detail-value">${Utils.formatCurrency(totalPaid)}</div>
-                        </div>
-                        <div class="detail-item">
-                            <div class="detail-label">Total Due</div>
-                            <div class="detail-value">${Utils.formatCurrency(unpaidDue)}</div>
-                        </div>
-                    </div>
-                </div>
-            `;
-        }).join('');
-    }
-
-    filterStudents() {
-        const searchTerm = document.getElementById('studentSearch')?.value.toLowerCase() || '';
-        const paymentFilter = document.getElementById('paymentFilter')?.value || 'all';
-        
-        let students = window.storageManager.getStudents();
-
-        // Apply search filter
-        if (searchTerm) {
-            students = students.filter(student => 
-                student.name.toLowerCase().includes(searchTerm) ||
-                student.studentId.toLowerCase().includes(searchTerm) ||
-                student.phone.includes(searchTerm)
-            );
-        }
-
-        // Apply payment filter
-        if (paymentFilter !== 'all') {
-            students = students.filter(student => {
-                const payments = window.storageManager.getPaymentsByStudent(student.id);
-                
-                // Get paid months
-                const paidMonths = new Set();
-                payments.forEach(payment => {
-                    payment.months.forEach(monthId => {
-                        paidMonths.add(monthId);
-                    });
-                });
-                
-                // Calculate unpaid due based on enrolled courses and starting months
-                let unpaidDue = 0;
-                if (student.enrolledCourses && student.enrolledCourses.length > 0) {
-                    student.enrolledCourses.forEach(enrollment => {
-                        const allCourseMonths = window.storageManager.getMonthsByCourse(enrollment.courseId)
-                            .sort((a, b) => (a.monthNumber || 0) - (b.monthNumber || 0));
-                        
-                        if (enrollment.startingMonthId) {
-                            const startingMonth = window.storageManager.getMonthById(enrollment.startingMonthId);
-                            const endingMonth = enrollment.endingMonthId ? window.storageManager.getMonthById(enrollment.endingMonthId) : null;
-                            
-                            if (startingMonth) {
-                                let applicableMonths = allCourseMonths.filter(month => 
-                                    (month.monthNumber || 0) >= (startingMonth.monthNumber || 0)
-                                );
-                                
-                                // If ending month is specified, filter out months after it
-                                if (endingMonth) {
-                                    applicableMonths = applicableMonths.filter(month => 
-                                        (month.monthNumber || 0) <= (endingMonth.monthNumber || 0)
-                                    );
-                                }
-                                
-                                applicableMonths.forEach(month => {
-                                    const monthPayment = window.storageManager.getMonthPaymentDetails(student.id)[month.id];
-                                    if (!monthPayment) {
-                                        // No payment made for this month
-                                        unpaidDue += month.payment;
-                                    } else {
-                                        // Check if there's remaining due
-                                        const remainingDue = Math.max(0, month.payment - monthPayment.totalPaid);
-                                        unpaidDue += remainingDue;
-                                    }
-                                });
-                            }
-                        }
-                    });
-                }
-
-                if (paymentFilter === 'paid') {
-                    return unpaidDue <= 0;
-                } else if (paymentFilter === 'unpaid') {
-                    return unpaidDue > 0;
-                }
-                return true;
-            });
-        }
-
-        this.renderStudents(students);
     }
 
     editInstitution(id) {
@@ -740,7 +525,6 @@ class StudentManagementManager {
             if (result) {
                 Utils.showToast('Student updated successfully', 'success');
                 window.navigationManager.closeModal(document.getElementById('editModal'));
-                this.loadStudents();
             }
         });
     }
@@ -753,7 +537,6 @@ class StudentManagementManager {
             const result = window.storageManager.deleteStudent(id);
             if (result.success) {
                 Utils.showToast('Student deleted successfully', 'success');
-                this.loadStudents();
             } else {
                 Utils.showToast(result.message, 'error');
             }

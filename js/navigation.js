@@ -91,6 +91,9 @@ class NavigationManager {
                     window.studentManager.refresh();
                 }
                 break;
+            case 'students-database':
+                window.studentsDatabaseManager?.refresh();
+                break;
             case 'pay-fee':
                 window.feePaymentManager?.refresh();
                 break;

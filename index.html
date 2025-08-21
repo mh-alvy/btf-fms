@@ -61,6 +61,7 @@
                 <button class="nav-item active" data-page="dashboard">Dashboard</button>
                 <button class="nav-item" data-page="manage-batch" data-roles="admin,developer">Manage Batch</button>
                 <button class="nav-item" data-page="manage-students">Manage Students</button>
+                <button class="nav-item" data-page="students-database">Students Database</button>
                 <button class="nav-item" data-page="pay-fee">Pay Fee</button>
                 <button class="nav-item" data-page="reports" data-roles="admin,developer">Reports</button>
                 <button class="nav-item" data-page="discount-reports" data-roles="admin,developer">Discount Reports</button>
@@ -289,21 +290,97 @@
                         </form>
                     </div>
                 </div>
+            </section>
 
-                <!-- Students List -->
-                <div class="students-section">
-                    <div class="section-header">
-                        <h3>Students List</h3>
-                        <div class="filter-controls">
-                            <input type="text" id="studentSearch" placeholder="Search students...">
-                            <select id="paymentFilter">
-                                <option value="all">All Students</option>
-                                <option value="paid">Paid</option>
+            <!-- Students Database -->
+            <section id="students-database" class="page">
+                <div class="page-header">
+                    <h2>Students Database</h2>
+                </div>
+                
+                <!-- Advanced Filters -->
+                <div class="database-filters">
+                    <h3>Filter Students</h3>
+                    <div class="filter-grid">
+                        <div class="form-group">
+                            <label for="dbSearchInput">Search</label>
+                            <input type="text" id="dbSearchInput" placeholder="Search by name, ID, or phone...">
+                        </div>
+                        <div class="form-group">
+                            <label for="dbBatchFilter">Batch</label>
+                            <select id="dbBatchFilter">
+                                <option value="">All Batches</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="dbCourseFilter">Course</label>
+                            <select id="dbCourseFilter">
+                                <option value="">All Courses</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="dbMonthFilter">Month</label>
+                            <select id="dbMonthFilter">
+                                <option value="">All Months</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="dbPaymentStatusFilter">Payment Status</label>
+                            <select id="dbPaymentStatusFilter">
+                                <option value="">All Students</option>
+                                <option value="paid">Fully Paid</option>
+                                <option value="partial">Partially Paid</option>
                                 <option value="unpaid">Unpaid</option>
                             </select>
                         </div>
+                        <div class="form-group">
+                            <label for="dbInstitutionFilter">Institution</label>
+                            <select id="dbInstitutionFilter">
+                                <option value="">All Institutions</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="dbGenderFilter">Gender</label>
+                            <select id="dbGenderFilter">
+                                <option value="">All Genders</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                                <option value="Custom">Custom</option>
+                            </select>
+                        </div>
+                        <div class="form-group filter-actions">
+                            <button id="dbApplyFilters" class="btn btn-primary">Apply Filters</button>
+                            <button id="dbClearFilters" class="btn btn-outline">Clear All</button>
+                            <button id="dbExportData" class="btn btn-secondary">Export CSV</button>
+                        </div>
                     </div>
-                    <div id="studentsList" class="students-list"></div>
+                </div>
+
+                <!-- Results Summary -->
+                <div class="database-summary">
+                    <div class="summary-stats">
+                        <div class="stat-item">
+                            <span class="stat-label">Total Students</span>
+                            <span class="stat-value" id="dbTotalStudents">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Filtered Results</span>
+                            <span class="stat-value" id="dbFilteredCount">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Total Revenue</span>
+                            <span class="stat-value" id="dbTotalRevenue">৳0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Pending Dues</span>
+                            <span class="stat-value" id="dbPendingDues">৳0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Students List -->
+                <div class="database-results">
+                    <div id="dbStudentsList" class="students-database-list"></div>
                 </div>
             </section>
 
@@ -536,6 +613,7 @@
     <script src="js/fee-payment.js"></script>
     <script src="js/reports.js"></script>
     <script src="js/user-management.js"></script>
+    <script src="js/students-database.js"></script>
     <script src="js/invoice.js"></script>
     <script src="js/dashboard.js"></script>
     <script src="js/main.js"></script>

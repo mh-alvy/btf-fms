@@ -118,6 +118,18 @@ class FeePaymentManager {
         this.currentStudent = null;
     }
 
+    findStudentById(studentId) {
+        const student = window.storageManager.getStudentById(studentId);
+        if (student) {
+            // Navigate to pay fee page
+            window.navigationManager.navigateTo('pay-fee');
+            
+            // Set the search input and trigger search
+            document.getElementById('searchStudentId').value = student.studentId;
+            this.findStudent();
+        }
+    }
+
     loadPaymentOptions(student) {
         const courseSelection = document.querySelector('#studentPaymentInfo #courseSelection');
         const monthSelection = document.querySelector('#studentPaymentInfo #monthSelection');
