@@ -397,6 +397,16 @@ class FeePaymentManager {
         // Store the actual discount amount for later use
         this.currentActualDiscount = actualDiscountAmount;
         
+        // Debug logging for discount calculation
+        console.log('Discount Calculation:', {
+            discountInputValue,
+            discountType,
+            discountableAmount: discountApplicableMonths.length > 0 ? 
+                discountApplicableMonths.reduce((sum, cb) => sum + parseFloat(cb.dataset.amount || 0), 0) : 0,
+            actualDiscountAmount,
+            applicableMonths: discountApplicableMonths.length
+        });
+        
         // Update visual feedback for discount selection
         this.updateDiscountVisualFeedback(discountSelection, actualDiscountAmount > 0);
         
@@ -556,17 +566,14 @@ class FeePaymentManager {
                     }
                 });
             } else {
-                // Fixed amount - distribute proportionally
+                // Fixed amount - distribute equally among applicable months
                 const applicableMonths = selectedMonths.filter(m => discountApplicableMonths.includes(m.monthId));
-                const totalDiscountableAmount = applicableMonths.reduce((sum, m) => sum + m.remainingDue, 0);
                 
-                if (totalDiscountableAmount > 0) {
+                if (applicableMonths.length > 0) {
+                    const discountPerMonth = discountAmount / applicableMonths.length;
                     applicableMonths.forEach(month => {
-                        const proportion = month.remainingDue / totalDiscountableAmount;
-                        discountDistribution[month.monthId] = Math.min(
-                            discountAmount * proportion,
-                            month.remainingDue
-                        );
+                        // Ensure discount doesn't exceed the month's remaining due
+                        discountDistribution[month.monthId] = Math.min(discountPerMonth, month.remainingDue);
                     });
                 }
             }

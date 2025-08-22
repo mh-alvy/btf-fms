@@ -382,9 +382,21 @@ class StorageManager {
                         }
                         
                         monthPayments[monthId].totalPaid += amountPaid;
-                        monthPayments[monthId].totalDiscount += discountAmount;
-                        monthPayments[monthId].payments.push({
-                            paymentId: payment.id,
+                                    // Legacy: distribute discount equally among all months
+                                    if (payment.discountType === 'percentage') {
+                                        const discountPercentage = parseFloat(payment.discountAmount || 0);
+                                        discountAmount = (month.payment * discountPercentage) / 100;
+                                    } else {
+                                        discountAmount = payment.discountAmount / payment.months.length;
+                                    }
+                                            // For fixed discount, distribute equally among applicable months
+                                            if (payment.discountType === 'percentage') {
+                                                const discountPercentage = parseFloat(payment.discountAmount || 0);
+                                                discountAmount = (month.payment * discountPercentage) / 100;
+                                            } else {
+                                                // Fixed amount - distribute equally
+                                                discountAmount = payment.discountAmount / applicableMonthsCount;
+                                            }
                             paidAmount: amountPaid,
                             discountAmount: discountAmount,
                             date: payment.createdAt
