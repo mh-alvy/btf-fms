@@ -479,7 +479,7 @@ class ReportsManager {
                 </div>
                 <div class="detail-item">
                     <div class="detail-label">Due Amount</div>
-                    <div class="detail-value">${reportType === 'month' && reportMonth ? 'N/A' : Utils.formatCurrency(payment.dueAmount)}</div>
+                    <div class="detail-value">${reportType === 'month' && reportMonth ? 'N/A' : Utils.formatCurrency(Math.max(0, payment.totalAmount - payment.paidAmount - (payment.discountAmount || 0)))}</div>
                 </div>
                 <div class="detail-item">
                     <div class="detail-label">Received By</div>
