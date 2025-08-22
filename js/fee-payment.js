@@ -230,7 +230,9 @@ class FeePaymentManager {
         monthSelection.innerHTML = allMonths.map(month => {
             const monthPayment = this.monthPaymentDetails[month.id];
             const totalPaid = monthPayment ? monthPayment.totalPaid : 0;
-            const remainingDue = month.payment - totalPaid;
+            const totalDiscount = monthPayment ? monthPayment.totalDiscount : 0;
+            const totalCovered = totalPaid + totalDiscount;
+            const remainingDue = Math.max(0, month.payment - totalCovered);
             const isFullyPaid = remainingDue <= 0;
             
             return `
@@ -240,7 +242,7 @@ class FeePaymentManager {
                            value="${month.id}" 
                            data-amount="${remainingDue}" 
                            data-total-fee="${month.payment}"
-                           data-paid-amount="${totalPaid}"
+                           data-paid-amount="${totalCovered}"
                            ${isFullyPaid ? 'checked disabled' : ''} 
                            onchange="feePaymentManager.calculateTotalAmount()">
                     <label for="month_${month.id}">
@@ -248,7 +250,7 @@ class FeePaymentManager {
                         <span class="course-fee">
                             ${isFullyPaid ? 
                                 Utils.formatCurrency(month.payment) : 
-                                (totalPaid > 0 ? 
+                                (totalCovered > 0 ? 
                                     `${Utils.formatCurrency(remainingDue)} due (${Utils.formatCurrency(totalPaid)} paid${totalDiscount > 0 ? `, ${Utils.formatCurrency(totalDiscount)} discount` : ''})` : 
                                     Utils.formatCurrency(month.payment)
                                 )
