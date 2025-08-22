@@ -448,6 +448,8 @@ class StudentsDatabaseManager {
                                 const monthPayment = monthPaymentDetails[month.id];
                                 if (monthPayment) {
                                     studentTotalPaid += monthPayment.totalPaid;
+                                    // Include discount as "paid" since it covers the due amount
+                                    studentTotalPaid += monthPayment.totalDiscount;
                                 }
                             });
                         }
