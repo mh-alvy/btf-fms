@@ -80,18 +80,16 @@ class DashboardManager {
                             }
                             
                             applicableMonths.forEach(month => {
-                                // Only count as unpaid due if this month hasn't been paid for
+                                // Calculate remaining due after payments and discounts
                                 const monthPayment = monthPaymentDetails[month.id];
                                 if (!monthPayment) {
                                     // No payment made for this month
                                     unpaidDue += month.payment;
                                 } else {
-                                    // Partial payment made, calculate remaining due
+                                    // Calculate remaining due after payments and discounts
                                     const totalCovered = monthPayment.totalPaid + monthPayment.totalDiscount;
                                     const remainingDue = Math.max(0, month.payment - totalCovered);
-                                    if (remainingDue > 0) {
-                                        unpaidDue += remainingDue;
-                                    }
+                                    unpaidDue += remainingDue;
                                 }
                             });
                         }

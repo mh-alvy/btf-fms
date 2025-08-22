@@ -338,7 +338,7 @@ class StorageManager {
                         monthPayments[monthId] = {
                             totalPaid: 0,
                             totalDiscount: 0,
-                            totalDue: monthPayment.monthFee || 0,
+                            monthFee: monthPayment.monthFee || 0,
                             payments: []
                         };
                     }
@@ -360,7 +360,7 @@ class StorageManager {
                             monthPayments[monthId] = {
                                 totalPaid: 0,
                                 totalDiscount: 0,
-                                totalDue: month.payment,
+                                monthFee: month.payment,
                                 payments: []
                             };
                         }

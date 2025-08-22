@@ -214,7 +214,7 @@ class StudentsDatabaseManager {
                                     totalDue += month.payment;
                                     const monthPayment = monthPaymentDetails[month.id];
                                     if (monthPayment) {
-                                        totalPaid += monthPayment.totalPaid;
+                                        totalPaid += monthPayment.totalPaid + monthPayment.totalDiscount;
                                     }
                                 });
                             }
@@ -222,17 +222,18 @@ class StudentsDatabaseManager {
                     });
                 }
 
-                    const totalDiscountAmount = payments.reduce((sum, payment) => sum + (payment.discountAmount || 0), 0);
+                const totalCovered = totalPaid; // totalPaid now includes discounts
+                const unpaidDue = Math.max(0, totalDue - totalCovered);
                     const totalDueAmount = payments.reduce((sum, payment) => sum + payment.totalAmount, 0);
                     const totalCoveredAmount = totalPaidAmount + totalDiscountAmount;
 
                 switch (paymentStatusFilter) {
                     case 'paid':
-                        return unpaidDue <= 0 && totalDue > 0;
+                        return totalDue > 0 && unpaidDue <= 0;
                     case 'partial':
-                        return (totalPaid > 0 || monthPaymentDetails && Object.values(monthPaymentDetails).some(mp => mp.totalDiscount > 0)) && unpaidDue > 0;
+                        return totalCovered > 0 && unpaidDue > 0;
                     case 'unpaid':
-                        return totalPaid === 0 && !Object.values(monthPaymentDetails || {}).some(mp => mp.totalDiscount > 0) && totalDue > 0;
+                        return totalCovered === 0 && totalDue > 0;
                     default:
                         return true;
                 }
@@ -298,6 +299,7 @@ class StudentsDatabaseManager {
                                 const monthPayment = monthPaymentDetails[month.id];
                                 if (monthPayment) {
                                     totalPaid += monthPayment.totalPaid;
+                                    totalPaid += monthPayment.totalDiscount; // Add discount as "paid"
                                 }
                             });
                         }
@@ -306,10 +308,22 @@ class StudentsDatabaseManager {
             }
 
             const unpaidDue = totalDue - totalPaid;
-            const paymentStatus = unpaidDue <= 0 && totalDue > 0 ? 'paid' : 
-                                 totalPaid > 0 && unpaidDue > 0 ? 'partial' : 'unpaid';
-            const statusText = unpaidDue <= 0 && totalDue > 0 ? 'Fully Paid' : 
-                              totalPaid > 0 && unpaidDue > 0 ? 'Partially Paid' : 'Unpaid';
+            
+            // Determine payment status based on remaining due
+            let paymentStatus, statusText;
+            if (totalDue === 0) {
+                paymentStatus = 'unpaid';
+                statusText = 'No Fees';
+            } else if (unpaidDue <= 0) {
+                paymentStatus = 'paid';
+                statusText = 'Fully Paid';
+            } else if (totalPaid > 0) {
+                paymentStatus = 'partial';
+                statusText = 'Partially Paid';
+            } else {
+                paymentStatus = 'unpaid';
+                statusText = 'Unpaid';
+            }
 
             return `
                 <div class="database-student-card">
@@ -449,7 +463,7 @@ class StudentsDatabaseManager {
                                 studentTotalDue += month.payment;
                                 const monthPayment = monthPaymentDetails[month.id];
                                 if (monthPayment) {
-                                    studentTotalPaid += monthPayment.totalPaid;
+                                    studentTotalPaid += monthPayment.totalPaid + monthPayment.totalDiscount;
                                 }
                             });
                         }
