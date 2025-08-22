@@ -675,11 +675,19 @@
 }
 
 .filter-actions {
-    display: flex;
+    display: flex !important;
+    flex-direction: row !important;
     gap: 12px;
     flex-wrap: wrap;
     align-items: center;
     justify-content: flex-start;
+    width: 100%;
+}
+
+.filter-actions .btn {
+    flex: 0 0 auto;
+    min-width: 120px;
+    white-space: nowrap;
 }
 
 .database-summary {
