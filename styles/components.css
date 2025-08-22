@@ -234,6 +234,20 @@
     accent-color: var(--warning-color);
 }
 
+/* Discounted month styling */
+.checkbox-item.discounted-month {
+    background: rgba(138, 43, 226, 0.1);
+    border: 1px solid #8a2be2;
+}
+
+.checkbox-item.discounted-month label {
+    color: #8a2be2;
+    font-weight: 500;
+}
+
+.checkbox-item.discounted-month input[type="checkbox"] {
+    accent-color: #8a2be2;
+}
 /* Discount selection styling */
 #discountSelection .checkbox-item {
     background: var(--bg-secondary);

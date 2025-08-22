@@ -249,7 +249,7 @@ class FeePaymentManager {
                             ${isFullyPaid ? 
                                 Utils.formatCurrency(month.payment) : 
                                 (totalPaid > 0 ? 
-                                    `${Utils.formatCurrency(remainingDue)} due (${Utils.formatCurrency(totalPaid)} paid)` : 
+                                    `${Utils.formatCurrency(remainingDue)} due (${Utils.formatCurrency(totalPaid)} paid${totalDiscount > 0 ? `, ${Utils.formatCurrency(totalDiscount)} discount` : ''})` : 
                                     Utils.formatCurrency(month.payment)
                                 )
                             }

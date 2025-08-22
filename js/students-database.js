@@ -222,15 +222,17 @@ class StudentsDatabaseManager {
                     });
                 }
 
-                const unpaidDue = totalDue - totalPaid;
+                    const totalDiscountAmount = payments.reduce((sum, payment) => sum + (payment.discountAmount || 0), 0);
+                    const totalDueAmount = payments.reduce((sum, payment) => sum + payment.totalAmount, 0);
+                    const totalCoveredAmount = totalPaidAmount + totalDiscountAmount;
 
                 switch (paymentStatusFilter) {
                     case 'paid':
                         return unpaidDue <= 0 && totalDue > 0;
                     case 'partial':
-                        return totalPaid > 0 && unpaidDue > 0;
+                        return (totalPaid > 0 || monthPaymentDetails && Object.values(monthPaymentDetails).some(mp => mp.totalDiscount > 0)) && unpaidDue > 0;
                     case 'unpaid':
-                        return totalPaid === 0 && totalDue > 0;
+                        return totalPaid === 0 && !Object.values(monthPaymentDetails || {}).some(mp => mp.totalDiscount > 0) && totalDue > 0;
                     default:
                         return true;
                 }
@@ -448,8 +450,6 @@ class StudentsDatabaseManager {
                                 const monthPayment = monthPaymentDetails[month.id];
                                 if (monthPayment) {
                                     studentTotalPaid += monthPayment.totalPaid;
-                                    // Include discount as "paid" since it covers the due amount
-                                    studentTotalPaid += monthPayment.totalDiscount;
                                 }
                             });
                         }
