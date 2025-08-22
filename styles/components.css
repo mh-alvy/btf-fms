@@ -676,8 +676,10 @@
 
 .filter-actions {
     display: flex;
-    gap: 8px;
+    gap: 12px;
     flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-start;
 }
 
 .database-summary {
@@ -988,7 +990,9 @@
     font-size: 1rem;
     color: var(--text-primary);
     cursor: pointer;
-    flex: 1;
+    flex: 0 0 auto;
+    min-width: 120px;
+    white-space: nowrap;
     user-select: none;
 }
 
