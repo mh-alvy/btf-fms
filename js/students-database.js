@@ -393,6 +393,9 @@ class StudentsDatabaseManager {
                         <button class="btn btn-small btn-secondary" onclick="studentsDatabaseManager.viewPaymentHistory('${student.id}')">
                             Payment History
                         </button>
+                        <button class="btn btn-small btn-danger" onclick="studentsDatabaseManager.deleteStudent('${student.id}')">
+                            Delete
+                        </button>
                     </div>
                 </div>
             `;
@@ -590,6 +593,24 @@ class StudentsDatabaseManager {
         `;
 
         window.navigationManager.showModal('editModal', 'Payment History', historyHtml);
+    }
+
+    deleteStudent(studentId) {
+        const student = window.storageManager.getStudentById(studentId);
+        if (!student) {
+            Utils.showToast('Student not found', 'error');
+            return;
+        }
+
+        Utils.confirm(`Are you sure you want to delete "${student.name}" (${student.studentId})? This action cannot be undone and will also remove all payment records for this student.`, () => {
+            const result = window.storageManager.deleteStudent(studentId);
+            if (result.success) {
+                Utils.showToast('Student deleted successfully', 'success');
+                this.applyFilters(); // Refresh the list
+            } else {
+                Utils.showToast(result.message, 'error');
+            }
+        });
     }
 }
 
