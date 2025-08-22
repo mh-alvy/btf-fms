@@ -677,6 +677,10 @@ class ReportsManager {
         const discountPercentage = payment.totalAmount > 0 ? 
             ((payment.discountAmount / payment.totalAmount) * 100).toFixed(1) : 0;
 
+        // Check if this payment has discount
+        const hasDiscount = payment.discountAmount && payment.discountAmount > 0;
+        const discountTag = hasDiscount ? '<span class="discount-tag">Discounted</span>' : '';
+
         return `
             <div class="payment-item">
                 <div class="detail-item">
@@ -695,7 +699,6 @@ class ReportsManager {
                     <div class="detail-label">Months</div>
                     <div class="detail-value">${monthNames}</div>
                 </div>
-                ${hasDiscount ? `
                 <div class="detail-item">
                     <div class="detail-label">Original Amount</div>
                     <div class="detail-value">${Utils.formatCurrency(payment.totalAmount)}</div>
@@ -703,15 +706,6 @@ class ReportsManager {
                 <div class="detail-item">
                     <div class="detail-label">Discount</div>
                     <div class="detail-value">-${Utils.formatCurrency(payment.discountAmount)}</div>
-                </div>
-                ` : ''}
-                <div class="detail-item">
-                    <div class="detail-label">Original Amount</div>
-                    <div class="detail-value">${Utils.formatCurrency(payment.totalAmount)}</div>
-                </div>
-                <div class="detail-item">
-                    <div class="detail-label">Discount</div>
-                    <div class="detail-value">${Utils.formatCurrency(payment.discountAmount)} (${discountPercentage}%)</div>
                 </div>
                 <div class="detail-item">
                     <div class="detail-label">Discounted Amount</div>
