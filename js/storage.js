@@ -366,7 +366,21 @@ class StorageManager {
                         }
                         // For legacy payments, assume full month payment
                         const amountPaid = payment.paidAmount / payment.months.length;
-                        const discountAmount = (payment.discountAmount || 0) / payment.months.length;
+                        // Calculate discount amount for this month
+                        let discountAmount = 0;
+                        if (payment.discountAmount > 0 && payment.discountApplicableMonths) {
+                            if (payment.discountApplicableMonths.includes(monthId)) {
+                                // This month had discount applied
+                                const applicableMonthsCount = payment.discountApplicableMonths.length;
+                                if (applicableMonthsCount > 0) {
+                                    discountAmount = payment.discountAmount / applicableMonthsCount;
+                                }
+                            }
+                        } else if (payment.discountAmount > 0) {
+                            // Legacy: distribute discount equally among all months
+                            discountAmount = payment.discountAmount / payment.months.length;
+                        }
+                        
                         monthPayments[monthId].totalPaid += amountPaid;
                         monthPayments[monthId].totalDiscount += discountAmount;
                         monthPayments[monthId].payments.push({

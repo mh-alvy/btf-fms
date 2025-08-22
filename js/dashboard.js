@@ -87,7 +87,8 @@ class DashboardManager {
                                     unpaidDue += month.payment;
                                 } else {
                                     // Partial payment made, calculate remaining due
-                                    const remainingDue = Math.max(0, month.payment - monthPayment.totalPaid - monthPayment.totalDiscount);
+                                    const totalCovered = monthPayment.totalPaid + monthPayment.totalDiscount;
+                                    const remainingDue = Math.max(0, month.payment - totalCovered);
                                     if (remainingDue > 0) {
                                         unpaidDue += remainingDue;
                                     }
