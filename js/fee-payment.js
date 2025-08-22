@@ -277,6 +277,9 @@ class FeePaymentManager {
         
         if (selectedMonths.length === 0) {
             discountSelection.innerHTML = '<p>Please select courses and months first</p>';
+            // Reset discount calculations when no months selected
+            document.getElementById('discountedAmount').value = document.getElementById('totalAmount').value || 0;
+            this.calculateDueAmount();
             return;
         }
 
@@ -337,8 +340,6 @@ class FeePaymentManager {
         
         // Calculate discount if inputs exist
         this.calculateDiscount();
-        
-        this.calculateDueAmount();
     }
 
     calculateDiscount() {
@@ -411,7 +412,10 @@ class FeePaymentManager {
         this.updateDiscountVisualFeedback(discountSelection, actualDiscountAmount > 0);
         
         // Update due amount calculation
-        this.calculateDueAmount();
+        // Force update due amount calculation
+        setTimeout(() => {
+            this.calculateDueAmount();
+        }, 0);
     }
 
     updateDiscountVisualFeedback(discountSelection, hasDiscount) {
