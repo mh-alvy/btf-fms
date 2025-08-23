@@ -480,114 +480,302 @@
 .invoice-container {
     background: white;
     color: #000;
-    padding: 40px;
-    font-family: 'Arial', sans-serif;
-    line-height: 1.4;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    line-height: 1.3;
+    max-width: 300px;
+    margin: 0 auto;
+    padding: 0;
 }
 
-.invoice-header {
+/* Thermal Printer Styles */
+.thermal-header {
+    text-align: center;
+    padding: 10px 15px;
+    border-bottom: 1px dashed #000;
+    margin-bottom: 10px;
+}
+
+.thermal-header .company-logo h1 {
+    font-size: 16px;
+    font-weight: bold;
+    margin: 0 0 5px 0;
+    letter-spacing: 1px;
+}
+
+.thermal-header .company-logo p {
+    font-size: 10px;
+    margin: 0 0 8px 0;
+    font-weight: normal;
+}
+
+.thermal-header .company-details p {
+    font-size: 9px;
+    margin: 1px 0;
+    color: #333;
+}
+
+.thermal-invoice-info {
+    padding: 8px 15px;
+    border-bottom: 1px dashed #000;
+    margin-bottom: 10px;
+}
+
+.invoice-title {
+    text-align: right;
+    font-size: 14px;
+    font-weight: bold;
+    margin-bottom: 8px;
+    letter-spacing: 1px;
+}
+
+.invoice-details-row {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 40px;
-    padding-bottom: 20px;
-    border-bottom: 2px solid #dc267f;
+    font-size: 10px;
+    margin-bottom: 2px;
 }
 
-.company-info h1 {
-    color: #dc267f;
-    font-size: 2rem;
-    margin-bottom: 8px;
+.thermal-customer {
+    padding: 8px 15px;
+    border-bottom: 1px dashed #000;
+    margin-bottom: 10px;
 }
 
-.company-info p {
-    color: #666;
-    margin: 2px 0;
+.section-title {
+    font-size: 11px;
+    font-weight: bold;
+    margin-bottom: 6px;
+    text-align: center;
+    letter-spacing: 0.5px;
 }
 
-.invoice-meta {
-    text-align: right;
-}
-
-.invoice-meta h2 {
-    color: #dc267f;
-    font-size: 1.5rem;
-    margin-bottom: 8px;
-}
-
-.invoice-details {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 40px;
-    margin-bottom: 40px;
-}
-
-.invoice-to,
-.invoice-info {
-    padding: 20px;
-    background: #f8f9fa;
-    border-radius: 8px;
-}
-
-.invoice-to h3,
-.invoice-info h3 {
-    color: #dc267f;
-    margin-bottom: 12px;
-    font-size: 1.1rem;
-}
-
-.invoice-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 30px;
-}
-
-.invoice-table th,
-.invoice-table td {
-    padding: 12px;
-    text-align: left;
-    border-bottom: 1px solid #ddd;
-}
-
-.invoice-table th {
-    background: #dc267f;
-    color: white;
-    font-weight: 600;
-}
-
-.invoice-table .text-right {
-    text-align: right;
-}
-
-.invoice-total {
+.customer-row {
     display: flex;
-    justify-content: flex-end;
-    margin-bottom: 40px;
+    justify-content: space-between;
+    font-size: 10px;
+    margin-bottom: 2px;
 }
 
-.total-section {
-    min-width: 300px;
+.customer-row .label {
+    font-weight: bold;
+    min-width: 80px;
+}
+
+.customer-row .value {
+    text-align: right;
+    flex: 1;
+}
+
+.thermal-items {
+    padding: 8px 15px;
+    margin-bottom: 10px;
+}
+
+.items-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.items-header .item-desc {
+    flex: 1;
+}
+
+.items-header .item-amount {
+    text-align: right;
+    min-width: 60px;
+}
+
+.items-divider {
+    border-top: 1px dashed #000;
+    margin: 5px 0;
+}
+
+.item-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+    margin-bottom: 4px;
+    align-items: flex-start;
+}
+
+.item-row .item-desc {
+    flex: 1;
+    padding-right: 10px;
+}
+
+.item-row .item-desc small {
+    font-size: 8px;
+    color: #666;
+}
+
+.item-row .item-amount {
+    text-align: right;
+    min-width: 60px;
+    font-weight: bold;
+}
+
+.thermal-totals {
+    padding: 0 15px;
+    margin-bottom: 10px;
 }
 
 .total-row {
     display: flex;
     justify-content: space-between;
-    padding: 8px 0;
+    font-size: 10px;
+    margin-bottom: 2px;
 }
 
-.total-row.final {
-    border-top: 2px solid #dc267f;
-    font-weight: 700;
-    font-size: 1.1rem;
+.total-row .total-label {
+    font-weight: bold;
+}
+
+.total-row .total-amount {
+    text-align: right;
+    font-weight: bold;
+    min-width: 60px;
+}
+
+.discount-row {
     color: #dc267f;
-    padding-top: 12px;
 }
 
-.invoice-footer {
+.paid-row {
+    font-size: 12px;
+    font-weight: bold;
+    border-top: 1px solid #000;
+    border-bottom: 1px solid #000;
+    padding: 3px 0;
+    margin: 5px 0;
+}
+
+.due-row {
+    color: #dc3545;
+    font-weight: bold;
+}
+
+.thermal-payment-info {
+    padding: 8px 15px;
+    border-bottom: 1px dashed #000;
+    margin-bottom: 10px;
+}
+
+.payment-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+    margin-bottom: 2px;
+}
+
+.payment-row .label {
+    font-weight: bold;
+    min-width: 80px;
+}
+
+.payment-row .value {
+    text-align: right;
+    flex: 1;
+}
+
+.thermal-footer {
+    padding: 10px 15px;
     text-align: center;
-    padding-top: 20px;
-    border-top: 1px solid #ddd;
+}
+
+.thank-you {
+    font-size: 12px;
+    font-weight: bold;
+    margin-bottom: 8px;
+    letter-spacing: 1px;
+}
+
+.footer-note {
+    font-size: 9px;
+    margin-bottom: 8px;
+    line-height: 1.2;
+}
+
+.footer-contact {
+    font-size: 8px;
     color: #666;
+}
+
+.print-actions {
+    padding: 15px;
+    text-align: center;
+    border-top: 1px solid #ddd;
+    background: #f8f9fa;
+}
+
+.print-actions .btn {
+    margin: 0 5px;
+}
+
+/* Print Styles for Thermal Printer */
+@media print {
+    .invoice-container {
+        max-width: none;
+        width: 58mm; /* Standard thermal printer width */
+        font-size: 10px;
+        margin: 0;
+        padding: 0;
+    }
+    
+    .print-actions {
+        display: none;
+    }
+    
+    .thermal-header,
+    .thermal-invoice-info,
+    .thermal-customer,
+    .thermal-items,
+    .thermal-totals,
+    .thermal-payment-info {
+        page-break-inside: avoid;
+    }
+    
+    .items-divider {
+        border-top: 1px dashed #000;
+    }
+    
+    body {
+        margin: 0;
+        padding: 0;
+    }
+}
+
+/* Mobile Responsive */
+@media (max-width: 480px) {
+    .invoice-container {
+        max-width: 100%;
+        font-size: 11px;
+    }
+    
+    .thermal-header .company-logo h1 {
+        font-size: 14px;
+    }
+    
+    .invoice-title {
+        font-size: 12px;
+    }
+}
+
+/* Legacy styles cleanup */
+.invoice-header,
+.company-info,
+.invoice-meta,
+.invoice-details,
+.invoice-to,
+.invoice-info,
+.invoice-table,
+.invoice-total,
+.total-section,
+.invoice-footer {
+    /* Remove old styles */
 }
 
 /* Recent Activities */
