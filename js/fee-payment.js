@@ -349,6 +349,9 @@ class FeePaymentManager {
         const discountedAmountInput = document.getElementById('discountedAmount');
         const studentPaymentInfo = document.getElementById('studentPaymentInfo');
         
+        // Declare discountApplicableMonths at function scope
+        let discountApplicableMonths = [];
+        
         if (!discountAmountInput || !discountTypeSelect || !discountedAmountInput || !studentPaymentInfo) {
             return;
         }
@@ -360,7 +363,7 @@ class FeePaymentManager {
         const discountType = discountTypeSelect.value || 'fixed';
         
         if (discountInputValue > 0 && discountSelection) {
-            const discountApplicableMonths = Array.from(discountSelection.querySelectorAll('input[type="checkbox"]:checked'));
+            discountApplicableMonths = Array.from(discountSelection.querySelectorAll('input[type="checkbox"]:checked'));
             
             if (discountApplicableMonths.length > 0) {
                 let discountableAmount = 0;
