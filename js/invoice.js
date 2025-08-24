@@ -174,8 +174,324 @@ class InvoiceManager {
     printInvoice() {
         const invoiceContent = document.querySelector('.invoice-container');
         if (invoiceContent) {
-            Utils.printElement(invoiceContent);
+            this.printInvoiceWithStyles(invoiceContent);
         }
+    }
+
+    printInvoiceWithStyles(element) {
+        const printWindow = window.open('', '_blank');
+        
+        // Get all stylesheets from the current page
+        const stylesheets = Array.from(document.styleSheets);
+        let allStyles = '';
+        
+        // Extract CSS rules from all stylesheets
+        stylesheets.forEach(stylesheet => {
+            try {
+                if (stylesheet.cssRules) {
+                    Array.from(stylesheet.cssRules).forEach(rule => {
+                        allStyles += rule.cssText + '\n';
+                    });
+                }
+            } catch (e) {
+                // Handle cross-origin stylesheets
+                console.warn('Could not access stylesheet:', e);
+            }
+        });
+        
+        // Also get inline styles from style tags
+        const styleTags = document.querySelectorAll('style');
+        styleTags.forEach(styleTag => {
+            allStyles += styleTag.textContent + '\n';
+        });
+        
+        printWindow.document.write(`
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Invoice - Break The Fear</title>
+                <meta charset="UTF-8">
+                <style>
+                    ${allStyles}
+                    
+                    /* Additional print-specific styles */
+                    body {
+                        margin: 0;
+                        padding: 20px;
+                        background: white !important;
+                        font-family: 'Courier New', monospace !important;
+                    }
+                    
+                    .invoice-container {
+                        background: white !important;
+                        color: #000 !important;
+                        font-family: 'Courier New', monospace !important;
+                        font-size: 12px !important;
+                        line-height: 1.3 !important;
+                        max-width: 300px !important;
+                        margin: 0 auto !important;
+                        padding: 0 !important;
+                    }
+                    
+                    .thermal-header {
+                        text-align: center !important;
+                        padding: 10px 15px !important;
+                        border-bottom: 1px dashed #000 !important;
+                        margin-bottom: 10px !important;
+                    }
+                    
+                    .thermal-header .company-logo h1 {
+                        font-size: 16px !important;
+                        font-weight: bold !important;
+                        margin: 0 0 5px 0 !important;
+                        letter-spacing: 1px !important;
+                        color: #000 !important;
+                    }
+                    
+                    .thermal-header .company-logo p {
+                        font-size: 10px !important;
+                        margin: 0 0 8px 0 !important;
+                        font-weight: normal !important;
+                        color: #000 !important;
+                    }
+                    
+                    .thermal-header .company-details p {
+                        font-size: 9px !important;
+                        margin: 1px 0 !important;
+                        color: #333 !important;
+                    }
+                    
+                    .thermal-invoice-info {
+                        padding: 8px 15px !important;
+                        border-bottom: 1px dashed #000 !important;
+                        margin-bottom: 10px !important;
+                    }
+                    
+                    .invoice-title {
+                        text-align: right !important;
+                        font-size: 14px !important;
+                        font-weight: bold !important;
+                        margin-bottom: 8px !important;
+                        letter-spacing: 1px !important;
+                        color: #000 !important;
+                    }
+                    
+                    .invoice-details-row {
+                        display: flex !important;
+                        justify-content: space-between !important;
+                        font-size: 10px !important;
+                        margin-bottom: 2px !important;
+                        color: #000 !important;
+                    }
+                    
+                    .thermal-customer {
+                        padding: 8px 15px !important;
+                        border-bottom: 1px dashed #000 !important;
+                        margin-bottom: 10px !important;
+                    }
+                    
+                    .section-title {
+                        font-size: 11px !important;
+                        font-weight: bold !important;
+                        margin-bottom: 6px !important;
+                        text-align: center !important;
+                        letter-spacing: 0.5px !important;
+                        color: #000 !important;
+                    }
+                    
+                    .customer-row {
+                        display: flex !important;
+                        justify-content: space-between !important;
+                        font-size: 10px !important;
+                        margin-bottom: 2px !important;
+                        color: #000 !important;
+                    }
+                    
+                    .customer-row .label {
+                        font-weight: bold !important;
+                        min-width: 80px !important;
+                        color: #000 !important;
+                    }
+                    
+                    .customer-row .value {
+                        text-align: right !important;
+                        flex: 1 !important;
+                        color: #000 !important;
+                    }
+                    
+                    .thermal-items {
+                        padding: 8px 15px !important;
+                        margin-bottom: 10px !important;
+                    }
+                    
+                    .items-header {
+                        display: flex !important;
+                        justify-content: space-between !important;
+                        font-size: 10px !important;
+                        font-weight: bold !important;
+                        margin-bottom: 5px !important;
+                        color: #000 !important;
+                    }
+                    
+                    .items-header .item-desc {
+                        flex: 1 !important;
+                    }
+                    
+                    .items-header .item-amount {
+                        text-align: right !important;
+                        min-width: 60px !important;
+                    }
+                    
+                    .items-divider {
+                        border-top: 1px dashed #000 !important;
+                        margin: 5px 0 !important;
+                    }
+                    
+                    .item-row {
+                        display: flex !important;
+                        justify-content: space-between !important;
+                        font-size: 10px !important;
+                        margin-bottom: 4px !important;
+                        align-items: flex-start !important;
+                        color: #000 !important;
+                    }
+                    
+                    .item-row .item-desc {
+                        flex: 1 !important;
+                        padding-right: 10px !important;
+                    }
+                    
+                    .item-row .item-desc small {
+                        font-size: 8px !important;
+                        color: #666 !important;
+                    }
+                    
+                    .item-row .item-amount {
+                        text-align: right !important;
+                        min-width: 60px !important;
+                        font-weight: bold !important;
+                        color: #000 !important;
+                    }
+                    
+                    .thermal-totals {
+                        padding: 0 15px !important;
+                        margin-bottom: 10px !important;
+                    }
+                    
+                    .total-row {
+                        display: flex !important;
+                        justify-content: space-between !important;
+                        font-size: 10px !important;
+                        margin-bottom: 2px !important;
+                        color: #000 !important;
+                    }
+                    
+                    .total-row .total-label {
+                        font-weight: bold !important;
+                        color: #000 !important;
+                    }
+                    
+                    .total-row .total-amount {
+                        text-align: right !important;
+                        font-weight: bold !important;
+                        min-width: 60px !important;
+                        color: #000 !important;
+                    }
+                    
+                    .discount-row {
+                        color: #dc267f !important;
+                    }
+                    
+                    .paid-row {
+                        font-size: 12px !important;
+                        font-weight: bold !important;
+                        border-top: 1px solid #000 !important;
+                        border-bottom: 1px solid #000 !important;
+                        padding: 3px 0 !important;
+                        margin: 5px 0 !important;
+                        color: #000 !important;
+                    }
+                    
+                    .due-row {
+                        color: #dc3545 !important;
+                        font-weight: bold !important;
+                    }
+                    
+                    .thermal-payment-info {
+                        padding: 8px 15px !important;
+                        border-bottom: 1px dashed #000 !important;
+                        margin-bottom: 10px !important;
+                    }
+                    
+                    .payment-row {
+                        display: flex !important;
+                        justify-content: space-between !important;
+                        font-size: 10px !important;
+                        margin-bottom: 2px !important;
+                        color: #000 !important;
+                    }
+                    
+                    .payment-row .label {
+                        font-weight: bold !important;
+                        min-width: 80px !important;
+                        color: #000 !important;
+                    }
+                    
+                    .payment-row .value {
+                        text-align: right !important;
+                        flex: 1 !important;
+                        color: #000 !important;
+                    }
+                    
+                    .thermal-footer {
+                        padding: 10px 15px !important;
+                        text-align: center !important;
+                    }
+                    
+                    .thank-you {
+                        font-size: 12px !important;
+                        font-weight: bold !important;
+                        margin-bottom: 8px !important;
+                        letter-spacing: 1px !important;
+                        color: #000 !important;
+                    }
+                    
+                    .footer-note {
+                        font-size: 9px !important;
+                        margin-bottom: 8px !important;
+                        line-height: 1.2 !important;
+                        color: #000 !important;
+                    }
+                    
+                    .footer-contact {
+                        font-size: 8px !important;
+                        color: #666 !important;
+                    }
+                    
+                    .print-actions {
+                        display: none !important;
+                    }
+                    
+                    @page {
+                        margin: 0.5in;
+                        size: auto;
+                    }
+                </style>
+            </head>
+            <body>
+                ${element.outerHTML}
+            </body>
+            </html>
+        `);
+        
+        printWindow.document.close();
+        printWindow.focus();
+        
+        // Wait for content to load then print
+        setTimeout(() => {
+            printWindow.print();
+            printWindow.close();
+        }, 500);
     }
 }
 
