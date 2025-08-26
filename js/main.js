@@ -105,6 +105,20 @@ class App {
         if (loginModal) {
             loginModal.classList.add('active');
             document.body.style.overflow = 'hidden';
+            
+            // Show first-time password if it exists
+            const firstTimePassword = localStorage.getItem('btf_first_time_password');
+            if (firstTimePassword) {
+                const demoCredentials = loginModal.querySelector('.demo-credentials');
+                if (demoCredentials) {
+                    demoCredentials.innerHTML = `
+                        <h4>🔐 First Time Setup:</h4>
+                        <p><strong>Username:</strong> admin</p>
+                        <p><strong>Password:</strong> ${firstTimePassword}</p>
+                        <p style="color: var(--danger-color); font-weight: bold;">⚠️ Please change this password immediately after login!</p>
+                    `;
+                }
+            }
         }
         if (mainApp) {
             mainApp.style.display = 'none';
@@ -122,6 +136,9 @@ class App {
         if (mainApp) {
             mainApp.style.display = 'flex';
         }
+        
+        // Clear first-time password after successful login
+        localStorage.removeItem('btf_first_time_password');
 
         // Initialize navigation manager
         if (!window.navigationManager.isInitialized) {
