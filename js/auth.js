@@ -36,14 +36,6 @@ class AuthManager {
             this.saveUsers();
         }
     }
-                if (!this.users.find(u => u.username === user.username)) {
-                    this.users.push({ ...user, id: this.generateId() });
-                }
-            });
-
-            this.saveUsers();
-        }
-    }
 
     generateRandomPassword() {
         const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
