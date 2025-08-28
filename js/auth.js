@@ -3,7 +3,7 @@ class AuthManager {
     constructor() {
         this.users = this.loadUsers();
         this.currentUser = null;
-        this.maxLoginAttempts = parseInt(import.meta.env.VITE_MAX_LOGIN_ATTEMPTS) || 5;
+        this.maxLoginAttempts = 5;
         this.loginAttempts = this.loadLoginAttempts();
         this.initializeDefaultUsers();
     }
@@ -11,61 +11,31 @@ class AuthManager {
     initializeDefaultUsers() {
         // Only create default users if none exist and environment variables are set
         if (this.users.length === 0) {
-            const defaultUsers = [];
+            // Create a single admin user with random password
+            const randomPassword = this.generateRandomPassword();
+            const defaultUser = { 
+                username: 'admin', 
+                password: this.hashPassword(randomPassword), 
+                role: 'admin' 
+            };
             
-            // Add admin user if credentials are provided
-            const adminUsername = import.meta.env.VITE_DEFAULT_ADMIN_USERNAME;
-            const adminPassword = import.meta.env.VITE_DEFAULT_ADMIN_PASSWORD;
-            if (adminUsername && adminPassword) {
-                defaultUsers.push({ 
-                    username: adminUsername, 
-                    password: this.hashPassword(adminPassword), 
-                    role: 'admin' 
-                });
-            }
+            // Show the generated password to the user
+            console.warn('🔐 IMPORTANT: Default admin user created!');
+            console.warn('Username: admin');
+            console.warn('Password:', randomPassword);
+            console.warn('Please change this password immediately after first login!');
             
-            // Add manager user if credentials are provided
-            const managerUsername = import.meta.env.VITE_DEFAULT_MANAGER_USERNAME;
-            const managerPassword = import.meta.env.VITE_DEFAULT_MANAGER_PASSWORD;
-            if (managerUsername && managerPassword) {
-                defaultUsers.push({ 
-                    username: managerUsername, 
-                    password: this.hashPassword(managerPassword), 
-                    role: 'manager' 
-                });
-            }
-            
-            // Add developer user if credentials are provided
-            const developerUsername = import.meta.env.VITE_DEFAULT_DEVELOPER_USERNAME;
-            const developerPassword = import.meta.env.VITE_DEFAULT_DEVELOPER_PASSWORD;
-            if (developerUsername && developerPassword) {
-                defaultUsers.push({ 
-                    username: developerUsername, 
-                    password: this.hashPassword(developerPassword), 
-                    role: 'developer' 
-                });
-            }
-            
-            // If no environment variables are set, create a single admin user with random password
-            if (defaultUsers.length === 0) {
-                const randomPassword = this.generateRandomPassword();
-                defaultUsers.push({ 
-                    username: 'admin', 
-                    password: this.hashPassword(randomPassword), 
-                    role: 'admin' 
-                });
-                
-                // Show the generated password to the user
-                console.warn('🔐 IMPORTANT: Default admin user created!');
-                console.warn('Username: admin');
-                console.warn('Password:', randomPassword);
-                console.warn('Please change this password immediately after first login!');
-                
-                // Also store it temporarily in localStorage for first-time setup
-                localStorage.setItem('btf_first_time_password', randomPassword);
+            // Also store it temporarily in localStorage for first-time setup
+            localStorage.setItem('btf_first_time_password', randomPassword);
+
+            // Add the default user if it doesn't already exist
+            if (!this.users.find(u => u.username === defaultUser.username)) {
+                this.users.push({ ...defaultUser, id: this.generateId() });
             }
 
-            defaultUsers.forEach(user => {
+            this.saveUsers();
+        }
+    }
                 if (!this.users.find(u => u.username === user.username)) {
                     this.users.push({ ...user, id: this.generateId() });
                 }
