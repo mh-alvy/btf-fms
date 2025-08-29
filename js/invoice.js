@@ -44,9 +44,9 @@ class InvoiceManager {
                         <p>Professional Coaching Center</p>
                     </div>
                     <div class="company-details">
-                        <p>Address: Dhaka, Bangladesh</p>
-                        <p>Phone: +880 1XXX-XXXXXX</p>
-                        <p>Email: info@breakthefear.com</p>
+                        <p>Address: Comilla, Bangladesh</p>
+                        <p>Phone: +880 1521-706839</p>
+                        <p>Email: breakthefear.edu@gmail.com</p>
                     </div>
                 </div>
 
