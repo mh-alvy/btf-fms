@@ -18,7 +18,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
 export const db = {
   // Generic CRUD operations
   async create(table, data) {
-    const user = auth.getCurrentUser();
+    const user = window.authManager?.getCurrentUser();
     const dataWithUser = user ? { ...data, created_by: user.id } : data;
     
     const { data: result, error } = await supabase
@@ -154,7 +154,7 @@ export const db = {
 // Activity logging
 export const logActivity = async (type, description, data = {}) => {
   try {
-    const user = auth.getCurrentUser();
+    const user = window.authManager?.getCurrentUser();
     await supabase
       .from('activities')
       .insert({

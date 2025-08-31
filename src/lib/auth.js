@@ -1,4 +1,4 @@
-import { auth, logActivity } from './supabase.js';
+import { logActivity } from './supabase.js';
 import { supabase } from './supabase.js';
 
 class AuthManager {
@@ -10,7 +10,7 @@ class AuthManager {
 
     async init() {
         // Check for existing session
-        this.currentUser = auth.getCurrentUser();
+        this.currentUser = this.getCurrentUser();
         
         // Ensure default users exist
         await this.ensureDefaultUsers();
