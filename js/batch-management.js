@@ -84,9 +84,10 @@ class BatchManager {
 
     async createBatch() {
         const batchName = Utils.sanitizeInput(document.getElementById('batchName').value);
+        const batchName = window.utils.sanitizeInput(document.getElementById('batchName').value);
 
         if (!batchName) {
-            Utils.showToast('Please enter batch name', 'error');
+            window.utils.showToast('Please enter batch name', 'error');
             return;
         }
 
@@ -96,23 +97,23 @@ class BatchManager {
         );
 
         if (existingBatch) {
-            Utils.showToast('Batch with this name already exists', 'error');
+            window.utils.showToast('Batch with this name already exists', 'error');
             return;
         }
 
         const batch = await window.storageManager.addBatch({ name: batchName });
-        Utils.showToast('Batch created successfully', 'success');
+        window.utils.showToast('Batch created successfully', 'success');
         
         document.getElementById('createBatchForm').reset();
         this.refresh();
     }
 
     async createCourse() {
-        const courseName = Utils.sanitizeInput(document.getElementById('courseName').value);
+        const courseName = window.utils.sanitizeInput(document.getElementById('courseName').value);
         const batchId = document.getElementById('courseBatch').value;
 
         if (!courseName || !batchId) {
-            Utils.showToast('Please fill all fields', 'error');
+            window.utils.showToast('Please fill all fields', 'error');
             return;
         }
 
@@ -122,7 +123,7 @@ class BatchManager {
         );
 
         if (existingCourse) {
-            Utils.showToast('Course with this name already exists in the selected batch', 'error');
+            window.utils.showToast('Course with this name already exists in the selected batch', 'error');
             return;
         }
 
@@ -131,7 +132,7 @@ class BatchManager {
             batchId 
         });
         
-        Utils.showToast('Course created successfully', 'success');
+        window.utils.showToast('Course created successfully', 'success');
         
         document.getElementById('createCourseForm').reset();
         this.refresh();
@@ -142,7 +143,7 @@ class BatchManager {
         let monthName;
         
         if (monthNameSelect === 'custom') {
-            monthName = Utils.sanitizeInput(document.getElementById('customMonthName').value);
+            monthName = window.utils.sanitizeInput(document.getElementById('customMonthName').value);
         } else {
             monthName = monthNameSelect;
         }
@@ -160,12 +161,12 @@ class BatchManager {
         const payment = parseFloat(document.getElementById('coursePayment').value);
 
         if (!monthName || !monthNumber || !courseId || !payment || payment <= 0) {
-            Utils.showToast('Please fill all fields with valid values', 'error');
+            window.utils.showToast('Please fill all fields with valid values', 'error');
             return;
         }
 
         if (monthNumber < 1 || monthNumber > 999) {
-            Utils.showToast('Month number must be between 1 and 999', 'error');
+            window.utils.showToast('Month number must be between 1 and 999', 'error');
             return;
         }
         // Check if month already exists for this course
@@ -174,7 +175,7 @@ class BatchManager {
         );
 
         if (existingMonth) {
-            Utils.showToast('Month with this name or number already exists for the selected course', 'error');
+            window.utils.showToast('Month with this name or number already exists for the selected course', 'error');
             return;
         }
 
@@ -185,7 +186,7 @@ class BatchManager {
             payment 
         });
         
-        Utils.showToast('Month created successfully', 'success');
+        window.utils.showToast('Month created successfully', 'success');
         
         document.getElementById('createMonthForm').reset();
         this.toggleCustomMonthName(); // Reset custom name input visibility
@@ -208,7 +209,7 @@ class BatchManager {
             <div class="entity-item">
                 <div class="entity-info">
                     <div class="entity-name">${batch.name}</div>
-                    <div class="entity-details">Created: ${Utils.formatDate(batch.createdAt)}</div>
+                    <div class="entity-details">Created: ${window.utils.formatDate(batch.createdAt)}</div>
                 </div>
                 <div class="entity-actions">
                     <button class="btn btn-small btn-outline" onclick="batchManager.editBatch('${batch.id}')">Edit</button>
@@ -228,7 +229,7 @@ class BatchManager {
                 <div class="entity-item">
                     <div class="entity-info">
                         <div class="entity-name">${course.name}</div>
-                        <div class="entity-details">Batch: ${batch?.name || 'Unknown'} | Created: ${Utils.formatDate(course.createdAt)}</div>
+                        <div class="entity-details">Batch: ${batch?.name || 'Unknown'} | Created: ${window.utils.formatDate(course.createdAt)}</div>
                     </div>
                     <div class="entity-actions">
                         <button class="btn btn-small btn-outline" onclick="batchManager.editCourse('${course.id}')">Edit</button>
@@ -254,7 +255,7 @@ class BatchManager {
                             Course: ${course?.name || 'Unknown'} | 
                             Batch: ${batch?.name || 'Unknown'} | 
                             Month #: ${month.monthNumber || 'N/A'} |
-                            Fee: ${Utils.formatCurrency(month.payment)}
+                            Fee: ${window.utils.formatCurrency(month.payment)}
                         </div>
                     </div>
                     <div class="entity-actions">
@@ -291,7 +292,7 @@ class BatchManager {
 
         const newName = prompt('Edit batch name:', batch.name);
         if (newName && newName !== batch.name) {
-            const sanitizedName = Utils.sanitizeInput(newName);
+            const sanitizedName = window.utils.sanitizeInput(newName);
             
             // Check if new name already exists
             const existingBatch = window.storageManager.getBatches().find(b => 
@@ -299,12 +300,12 @@ class BatchManager {
             );
 
             if (existingBatch) {
-                Utils.showToast('Batch with this name already exists', 'error');
+                window.utils.showToast('Batch with this name already exists', 'error');
                 return;
             }
 
             window.storageManager.updateBatch(id, { name: sanitizedName });
-            Utils.showToast('Batch updated successfully', 'success');
+            window.utils.showToast('Batch updated successfully', 'success');
             this.refresh();
         }
     }
@@ -315,7 +316,7 @@ class BatchManager {
 
         const newName = prompt('Edit course name:', course.name);
         if (newName && newName !== course.name) {
-            const sanitizedName = Utils.sanitizeInput(newName);
+            const sanitizedName = window.utils.sanitizeInput(newName);
             
             // Check if new name already exists in the same batch
             const existingCourse = window.storageManager.getCourses().find(c => 
@@ -325,12 +326,12 @@ class BatchManager {
             );
 
             if (existingCourse) {
-                Utils.showToast('Course with this name already exists in this batch', 'error');
+                window.utils.showToast('Course with this name already exists in this batch', 'error');
                 return;
             }
 
             window.storageManager.updateCourse(id, { name: sanitizedName });
-            Utils.showToast('Course updated successfully', 'success');
+            window.utils.showToast('Course updated successfully', 'success');
             this.refresh();
         }
     }
@@ -346,7 +347,7 @@ class BatchManager {
             const updates = {};
             
             if (newName && newName !== month.name) {
-                const sanitizedName = Utils.sanitizeInput(newName);
+                const sanitizedName = window.utils.sanitizeInput(newName);
                 
                 // Check if new name already exists for the same course
                 const existingMonth = window.storageManager.getMonths().find(m => 
@@ -356,7 +357,7 @@ class BatchManager {
                 );
 
                 if (existingMonth) {
-                    Utils.showToast('Month with this name already exists for this course', 'error');
+                    window.utils.showToast('Month with this name already exists for this course', 'error');
                     return;
                 }
                 
@@ -369,44 +370,44 @@ class BatchManager {
 
             if (Object.keys(updates).length > 0) {
                 window.storageManager.updateMonth(id, updates);
-                Utils.showToast('Month updated successfully', 'success');
+                window.utils.showToast('Month updated successfully', 'success');
                 this.refresh();
             }
         }
     }
 
     deleteBatch(id) {
-        Utils.confirm('Are you sure you want to delete this batch? This will also delete all related courses and months.', () => {
+        window.utils.confirm('Are you sure you want to delete this batch? This will also delete all related courses and months.', () => {
             const result = window.storageManager.deleteBatch(id);
             if (result.success) {
-                Utils.showToast('Batch deleted successfully', 'success');
+                window.utils.showToast('Batch deleted successfully', 'success');
                 this.refresh();
             } else {
-                Utils.showToast(result.message, 'error');
+                window.utils.showToast(result.message, 'error');
             }
         });
     }
 
     deleteCourse(id) {
-        Utils.confirm('Are you sure you want to delete this course? This will also delete all related months.', () => {
+        window.utils.confirm('Are you sure you want to delete this course? This will also delete all related months.', () => {
             const result = window.storageManager.deleteCourse(id);
             if (result.success) {
-                Utils.showToast('Course deleted successfully', 'success');
+                window.utils.showToast('Course deleted successfully', 'success');
                 this.refresh();
             } else {
-                Utils.showToast(result.message, 'error');
+                window.utils.showToast(result.message, 'error');
             }
         });
     }
 
     deleteMonth(id) {
-        Utils.confirm('Are you sure you want to delete this month?', () => {
+        window.utils.confirm('Are you sure you want to delete this month?', () => {
             const result = window.storageManager.deleteMonth(id);
             if (result.success) {
-                Utils.showToast('Month deleted successfully', 'success');
+                window.utils.showToast('Month deleted successfully', 'success');
                 this.refresh();
             } else {
-                Utils.showToast(result.message, 'error');
+                window.utils.showToast(result.message, 'error');
             }
         });
     }
