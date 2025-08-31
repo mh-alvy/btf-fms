@@ -193,16 +193,17 @@ class AuthManager {
     async login(username, password) {
         console.log('Login attempt:', { username, password });
         
-        // Prevent any potential form submission issues
+        // Validate inputs
         if (!username || !password) {
+            console.log('Missing username or password');
             return { success: false, message: 'Username and password are required' };
         }
         
         // Ensure users are loaded
         if (!this.users || this.users.length === 0) {
             console.log('Loading users...');
-            this.loadUsers();
-            this.ensureDefaultUsers();
+            await this.loadUsers();
+            await this.ensureDefaultUsers();
         }
         
         console.log('Available users for login:', this.users.map(u => ({ username: u.username, role: u.role })));
@@ -212,16 +213,19 @@ class AuthManager {
         
         if (!user) {
             console.log('User not found:', username);
+            this.recordLoginAttempt(username, false);
             return { success: false, message: 'Invalid username or password' };
         }
         
         // Check password
         if (user.password !== password) {
             console.log('Invalid password for user:', username);
+            this.recordLoginAttempt(username, false);
             return { success: false, message: 'Invalid username or password' };
         }
         
         console.log('Login successful for user:', user);
+        this.recordLoginAttempt(username, true);
         this.currentUser = user;
         localStorage.setItem('btf_current_user', JSON.stringify(user));
         return { success: true, user };
