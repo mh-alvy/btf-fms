@@ -43,17 +43,20 @@ class AuthManager {
             {
                 username: 'admin',
                 password_hash: 'admin123', // In production, use proper hashing
-                role: 'admin'
+                role: 'admin',
+                is_active: true
             },
             {
                 username: 'manager',
                 password_hash: 'manager123',
-                role: 'manager'
+                role: 'manager',
+                is_active: true
             },
             {
                 username: 'developer',
                 password_hash: 'dev123',
-                role: 'developer'
+                role: 'developer',
+                is_active: true
             }
         ];
 
@@ -141,7 +144,8 @@ class AuthManager {
                 .insert({
                     username,
                     password_hash: password, // In production, hash this
-                    role
+                    role,
+                    is_active: true
                 })
                 .select()
                 .single();
