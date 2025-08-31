@@ -61,31 +61,15 @@ class AuthManager {
         ];
 
         try {
-            for (const user of defaultUsers) {
-                // Check if user already exists
-                const { data: existingUser, error: checkError } = await supabase
-                    .from('users')
-                    .select('id')
-                    .eq('username', user.username)
-                    .maybeSingle();
-
-                // If there's an error checking for existing user, skip this user
-                if (checkError) {
-                    console.warn(`Error checking for existing user ${user.username}:`, checkError);
-                    continue;
-                }
-
-                if (existingUser) {
-                    continue; // Skip if user already exists
-                }
-
-                const { error } = await supabase
-                    .from('users')
-                    .insert(user);
-                
-                if (error) {
-                    console.error('Error creating default user:', error);
-                }
+            const { error } = await supabase
+                .from('users')
+                .upsert(defaultUsers, { 
+                    onConflict: 'username',
+                    ignoreDuplicates: true 
+                });
+            
+            if (error) {
+                console.error('Error creating default users:', error);
             }
             console.log('Default users created successfully');
         } catch (error) {
