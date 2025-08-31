@@ -71,22 +71,6 @@ class AuthManager {
             if (error) {
                 console.error('Error creating default users:', error);
             }
-            console.log('Default users created successfully');
-        } catch (error) {
-            console.error('Error creating default users:', error);
-        }
-    }
-
-    async login(username, password) {
-        try {
-            // First, get the user by username
-            const { data: users, error: userError } = await supabase
-                .from('users')
-                .select('*')
-                .eq('username', username)
-                .eq('is_active', true)
-                .maybeSingle();
-
             if (userError) {
                 console.error('Database error:', userError);
                 return { success: false, error: 'Database connection error' };
