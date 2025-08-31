@@ -493,7 +493,7 @@ class FeePaymentManager {
         }
     }
 
-    processPayment() {
+    async processPayment() {
         if (!this.currentStudent) {
             Utils.showToast('Please find a student first', 'error');
             return;
@@ -594,7 +594,7 @@ class FeePaymentManager {
             receivedBy
         };
 
-        const savedPayment = window.storageManager.addPayment(payment);
+        const savedPayment = await window.storageManager.addPayment(payment);
         
         if (savedPayment) {
             Utils.showToast('Payment processed successfully!', 'success');

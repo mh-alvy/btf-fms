@@ -82,7 +82,7 @@ class BatchManager {
         }
     }
 
-    createBatch() {
+    async createBatch() {
         const batchName = Utils.sanitizeInput(document.getElementById('batchName').value);
 
         if (!batchName) {
@@ -100,14 +100,14 @@ class BatchManager {
             return;
         }
 
-        const batch = window.storageManager.addBatch({ name: batchName });
+        const batch = await window.storageManager.addBatch({ name: batchName });
         Utils.showToast('Batch created successfully', 'success');
         
         document.getElementById('createBatchForm').reset();
         this.refresh();
     }
 
-    createCourse() {
+    async createCourse() {
         const courseName = Utils.sanitizeInput(document.getElementById('courseName').value);
         const batchId = document.getElementById('courseBatch').value;
 
@@ -126,7 +126,7 @@ class BatchManager {
             return;
         }
 
-        const course = window.storageManager.addCourse({ 
+        const course = await window.storageManager.addCourse({ 
             name: courseName, 
             batchId 
         });
@@ -137,7 +137,7 @@ class BatchManager {
         this.refresh();
     }
 
-    createMonth() {
+    async createMonth() {
         const monthNameSelect = document.getElementById('monthName').value;
         let monthName;
         
@@ -178,7 +178,7 @@ class BatchManager {
             return;
         }
 
-        const month = window.storageManager.addMonth({ 
+        const month = await window.storageManager.addMonth({ 
             name: monthName, 
             monthNumber,
             courseId, 

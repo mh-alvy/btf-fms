@@ -47,7 +47,7 @@ class StudentManagementManager {
         }
     }
 
-    createInstitution() {
+    async createInstitution() {
         const name = document.getElementById('institutionName').value.trim();
         const address = document.getElementById('institutionAddress').value.trim();
 
@@ -71,7 +71,7 @@ class StudentManagementManager {
             address: Utils.sanitizeInput(address)
         };
 
-        const institution = window.storageManager.addInstitution(institutionData);
+        const institution = await window.storageManager.addInstitution(institutionData);
         if (institution) {
             Utils.showToast('Institution created successfully', 'success');
             document.getElementById('createInstitutionForm').reset();
@@ -80,7 +80,7 @@ class StudentManagementManager {
         }
     }
 
-    addStudent() {
+    async addStudent() {
         const name = document.getElementById('studentName').value.trim();
         const institutionId = document.getElementById('studentInstitution').value;
         const gender = document.getElementById('studentGender').value;
@@ -117,7 +117,7 @@ class StudentManagementManager {
             enrolledCourses
         };
 
-        const student = window.storageManager.addStudent(studentData);
+        const student = await window.storageManager.addStudent(studentData);
         if (student) {
             Utils.showToast(`Student added successfully with ID: ${student.studentId}`, 'success');
             document.getElementById('addStudentForm').reset();

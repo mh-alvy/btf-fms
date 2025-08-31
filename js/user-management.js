@@ -60,7 +60,7 @@ class UserManagementManager {
         return true;
     }
 
-    addUser() {
+    async addUser() {
         const username = document.getElementById('newUsername').value.trim();
         const password = document.getElementById('newPassword').value.trim();
         const role = document.getElementById('newUserRole').value;
@@ -70,7 +70,7 @@ class UserManagementManager {
             return;
         }
 
-        const result = window.authManager.addUser(username, password, role);
+        const result = await window.authManager.addUser(username, password, role);
         
         if (result.success) {
             Utils.showToast('User created successfully!', 'success');
@@ -123,7 +123,7 @@ class UserManagementManager {
         });
     }
 
-    updateUser(userId) {
+    async updateUser(userId) {
         const username = document.getElementById('editUsername').value.trim();
         const password = document.getElementById('editPassword').value.trim();
         const role = document.getElementById('editRole').value;
@@ -138,7 +138,7 @@ class UserManagementManager {
             updates.password = password;
         }
 
-        const result = window.authManager.updateUser(userId, updates);
+        const result = await window.authManager.updateUser(userId, updates);
         
         if (result.success) {
             Utils.showToast('User updated successfully!', 'success');
@@ -149,7 +149,7 @@ class UserManagementManager {
         }
     }
 
-    deleteUser(userId) {
+    async deleteUser(userId) {
         const users = window.authManager.getAllUsers();
         const user = users.find(u => u.id === userId);
         
@@ -158,8 +158,8 @@ class UserManagementManager {
             return;
         }
 
-        Utils.confirm(`Are you sure you want to delete user "${user.username}"?`, () => {
-            const result = window.authManager.deleteUser(userId);
+        Utils.confirm(`Are you sure you want to delete user "${user.username}"?`, async () => {
+            const result = await window.authManager.deleteUser(userId);
             
             if (result.success) {
                 Utils.showToast('User deleted successfully!', 'success');
