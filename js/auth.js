@@ -94,14 +94,14 @@ class AuthManager {
         }
             
         if (currentUsers.length === 0) {
-            this.createDefaultUsers();
+            await this.createDefaultUsers();
             console.log('Created default demo users');
         } else {
             console.log('Existing users found, skipping default user creation');
         }
     }
 
-    createDefaultUsers() {
+    async createDefaultUsers() {
         // Create default users with plain text passwords for demo
         const defaultUsers = [
             {
@@ -124,13 +124,25 @@ class AuthManager {
             }
         ];
 
-        // Create users in localStorage for immediate availability
-        this.users = defaultUsers.map(user => ({
-            ...user,
-            id: this.generateId(),
-            createdAt: new Date().toISOString()
-        }));
-        this.saveUsers();
+        if (this.useFirebase) {
+            // Create users in Firestore
+            for (const userData of defaultUsers) {
+                try {
+                    const user = await window.storageManager.addUser(userData);
+                    this.users.push(user);
+                } catch (error) {
+                    console.error('Error creating default user:', error);
+                }
+            }
+        } else {
+            // Create users in localStorage
+            this.users = defaultUsers.map(user => ({
+                ...user,
+                id: this.generateId(),
+                createdAt: new Date().toISOString()
+            }));
+            this.saveUsers();
+        }
         
         console.log('Default users created:', this.users.map(u => ({ username: u.username, role: u.role })));
     }
@@ -234,40 +246,6 @@ class AuthManager {
             console.error('Login error:', error);
             return { success: false, message: 'An error occurred during login' };
         }
-    }
-        
-        console.log('Available users for login:', this.users.map(u => ({ username: u.username, role: u.role })));
-        
-        // Check if account is locked
-        // Temporarily disable account locking for debugging
-        // if (this.isAccountLocked(username)) {
-        //     return { 
-        //         success: false, 
-        //         message: 'Account temporarily locked due to too many failed attempts. Please try again in 15 minutes.' 
-        //     };
-        // }
-
-        // Find user and verify credentials
-        const user = this.users.find(u => u.username === username);
-        
-        if (!user) {
-            console.log('User not found:', username);
-            this.recordLoginAttempt(username, false);
-            return { success: false, message: 'Invalid credentials' };
-        }
-        
-        // Check password
-        if (user.password !== password) {
-            console.log('Invalid password for user:', username);
-            this.recordLoginAttempt(username, false);
-            return { success: false, message: 'Invalid credentials' };
-        }
-        
-        console.log('Login successful for user:', user);
-        this.recordLoginAttempt(username, true);
-        this.currentUser = user;
-        localStorage.setItem('btf_current_user', JSON.stringify(user));
-        return { success: true, user };
     }
 
     async logout() {
