@@ -21,15 +21,8 @@ class App {
     }
 
     async init() {
-        // Wait for storage manager to initialize
-        if (window.storageManager && window.storageManager.init) {
-            await window.storageManager.init();
-        }
-        
-        // Wait for auth manager to initialize
-        if (window.authManager && window.authManager.init) {
-            await window.authManager.init();
-        }
+        // Wait for all managers to be available
+        await this.waitForManagers();
         
         // Initialize theme
         this.initializeTheme();
@@ -47,6 +40,30 @@ class App {
         this.initializeLogout();
         
         console.log('Application initialized successfully');
+    }
+
+    async waitForManagers() {
+        // Wait for storage manager to initialize
+        let attempts = 0;
+        while (!window.storageManager && attempts < 50) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+            attempts++;
+        }
+        
+        if (window.storageManager && window.storageManager.init) {
+            await window.storageManager.init();
+        }
+        
+        // Wait for auth manager to initialize
+        attempts = 0;
+        while (!window.authManager && attempts < 50) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+            attempts++;
+        }
+        
+        if (window.authManager && window.authManager.init) {
+            await window.authManager.init();
+        }
     }
 
     initializeTheme() {
@@ -104,6 +121,11 @@ class App {
     }
 
     async handleLogin() {
+        if (!window.authManager) {
+            Utils.showToast('System is still initializing, please wait...', 'warning');
+            return;
+        }
+
         const username = document.getElementById('username')?.value.trim();
         const password = document.getElementById('password')?.value.trim();
 
@@ -118,10 +140,14 @@ class App {
             this.currentUser = result.user;
             console.log('Login successful:', result.user);
             Utils.showToast(`Welcome back, ${result.user.username}!`, 'success');
-            this.showMainApp();
             
             // Clear form
             document.getElementById('loginForm').reset();
+            
+            // Show main app after a brief delay to ensure UI updates
+            setTimeout(() => {
+                this.showMainApp();
+            }, 100);
         } else {
             Utils.showToast(result.message || 'Invalid username or password', 'error');
         }
@@ -169,9 +195,10 @@ class App {
         // Clear first-time password after successful login
         localStorage.removeItem('btf_first_time_password');
 
-        // Initialize navigation manager
-        if (!window.navigationManager.isInitialized) {
-            window.navigationManager.hideLoginModal();
+        // Setup role-based navigation
+        if (window.navigationManager) {
+            window.navigationManager.setupRoleBasedNavigation();
+            window.navigationManager.navigateTo('dashboard');
         }
 
         // Refresh dashboard
@@ -197,6 +224,13 @@ class App {
 // Initialize application when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
     window.app = new App();
+    
+    // Add a small delay to ensure all scripts are loaded
+    setTimeout(() => {
+        if (window.app && window.app.initializationPromise) {
+            window.app.initializationPromise.catch(console.error);
+        }
+    }, 100);
     
     // Global logout function
     window.logout = function() {

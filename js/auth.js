@@ -85,7 +85,7 @@ class AuthManager {
 
     async ensureDefaultUsers() {
         // Only create default users if no users exist
-        if (this.users.length === 0) {
+        if (!this.users || this.users.length === 0) {
             await this.createDefaultUsers();
             console.log('Created default demo users');
         } else {
@@ -197,6 +197,12 @@ class AuthManager {
     async login(username, password) {
         console.log('Login attempt:', { username, password });
         
+        // Ensure users are loaded
+        if (!this.users || this.users.length === 0) {
+            this.loadUsers();
+            await this.ensureDefaultUsers();
+        }
+        
         // Check if account is locked
         if (this.isAccountLocked(username)) {
             return { 
@@ -210,9 +216,10 @@ class AuthManager {
         if (this.useFirebase) {
             // Try Firebase Auth first, then fallback to custom user system
             try {
-                // For demo purposes, we'll use the custom user system stored in Firestore
-                // In production, you'd use Firebase Auth properly
-                this.users = window.storageManager?.getUsers() || [];
+                // Ensure we have the latest users from Firestore
+                if (window.storageManager) {
+                    this.users = window.storageManager.getUsers() || [];
+                }
                 user = this.users.find(u => u.username === username && u.password === password);
             } catch (error) {
                 console.error('Firebase login error:', error);

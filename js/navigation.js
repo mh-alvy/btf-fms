@@ -113,6 +113,11 @@ class NavigationManager {
     }
 
     setupRoleBasedNavigation() {
+        if (!window.authManager) {
+            console.warn('AuthManager not available for role-based navigation');
+            return;
+        }
+        
         const currentUser = window.authManager.getCurrentUser();
         if (!currentUser) return;
 
