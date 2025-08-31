@@ -288,13 +288,9 @@ class FeePaymentManager {
                     <label for="month_${month.id}">
                         <span>${month.name} (${month.courseName}) ${isFullyPaid ? '✓ Fully Paid' : (totalPaid > 0 ? '⚠ Partial' : '')}</span>
                         <span class="course-fee">
-                            ${window.utils.formatCurrency(month.payment)}
-                                Utils.formatCurrency(month.payment) : 
-                                (totalCovered > 0 ? 
-                                    `${Utils.formatCurrency(remainingDue)} due (${Utils.formatCurrency(totalPaid)} paid${totalDiscount > 0 ? `, ${Utils.formatCurrency(totalDiscount)} discount` : ''})` : 
-                                    \`${window.utils.formatCurrency(remainingDue)} due (${window.utils.formatCurrency(totalPaid)} paid${totalDiscount > 0 ? `, ${window.utils.formatCurrency(totalDiscount)} discount` : ''})` : 
-                                    window.utils.formatCurrency(month.payment)
-                                )
+                            ${totalCovered > 0 ? 
+                                `${window.utils.formatCurrency(remainingDue)} due (${window.utils.formatCurrency(totalPaid)} paid${totalDiscount > 0 ? `, ${window.utils.formatCurrency(totalDiscount)} discount` : ''})` : 
+                                window.utils.formatCurrency(month.payment)
                             }
                         </span>
                     </label>
