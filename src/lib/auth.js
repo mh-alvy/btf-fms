@@ -62,11 +62,24 @@ class AuthManager {
 
         try {
             for (const user of defaultUsers) {
+                // Check if user already exists
+                const { data: existingUser } = await supabase
+                    .from('users')
+                    .select('id')
+                    .eq('username', user.username)
+                    .single();
+
+                // Skip if user already exists
+                if (existingUser) {
+                    console.log(`User ${user.username} already exists, skipping creation`);
+                    continue;
+                }
+
                 const { error } = await supabase
                     .from('users')
                     .insert(user);
                 
-                if (error && error.code !== '23505') { // Ignore duplicate key errors
+                if (error) {
                     console.error('Error creating default user:', error);
                 }
             }
