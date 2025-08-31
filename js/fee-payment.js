@@ -757,8 +757,3 @@ class FeePaymentManager {
 
 // Global fee payment manager instance
 window.feePaymentManager = new FeePaymentManager();
-
-// Initialize when DOM is loaded
-document.addEventListener('DOMContentLoaded', () => {
-    window.feePaymentManager = new FeePaymentManager();
-});

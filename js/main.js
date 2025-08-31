@@ -1,6 +1,18 @@
 // Main application initialization
 import './firebase-config.js';
 import './firestore-storage.js';
+import './utils.js';
+import './auth.js';
+import './navigation.js';
+import './batch-management.js';
+import './student-management.js';
+import './fee-payment.js';
+import './reports.js';
+import './user-management.js';
+import './reference-management.js';
+import './students-database.js';
+import './invoice.js';
+import './dashboard.js';
 
 class App {
     constructor() {
