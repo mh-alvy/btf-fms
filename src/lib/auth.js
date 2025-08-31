@@ -60,20 +60,24 @@ class AuthManager {
             }
         ];
 
-        try {
-            const { error } = await supabase
-                .from('users')
-                .upsert(defaultUsers, { 
-                    onConflict: 'username',
-                    ignoreDuplicates: true 
-                });
-            
-            if (error) {
-                console.error('Error creating default users:', error);
+        for (const user of defaultUsers) {
+            try {
+                const { error } = await supabase
+                    .from('users')
+                    .insert(user);
+                
+                if (error) {
+                    // Check for unique constraint violation (user already exists)
+                    if (error.code === '23505') {
+                        console.warn(`User ${user.username} already exists, skipping creation`);
+                    } else {
+                        console.error(`Error creating user ${user.username}:`, error);
+                    }
+                }
+            } catch (error) {
+                console.error(`Error creating user ${user.username}:`, error.message);
             }
-            if (userError) {
-                console.error('Database error:', userError);
-                return { success: false, error: 'Database connection error' };
+        }
             }
 
             if (!users) {
