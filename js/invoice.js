@@ -158,7 +158,7 @@ class InvoiceManager {
                         No signature required.
                     </div>
                     <div class="footer-contact">
-                        For queries: info@breakthefear.com
+                        For queries: breakthefear.edu@gmail.com
                     </div>
                 </div>
 
