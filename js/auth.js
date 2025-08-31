@@ -219,20 +219,27 @@ class AuthManager {
             };
         }
 
-        // Simple direct comparison for credentials
-        const user = this.users.find(u => u.username === username && u.password === password);
+        // Find user and verify credentials
+        const user = this.users.find(u => u.username === username);
         
-        console.log('Found user:', user);
-        
-        if (user) {
-            this.recordLoginAttempt(username, true);
-            this.currentUser = user;
-            localStorage.setItem('btf_current_user', JSON.stringify(user));
-            return { success: true, user };
+        if (!user) {
+            console.log('User not found:', username);
+            this.recordLoginAttempt(username, false);
+            return { success: false, message: 'Invalid credentials' };
         }
         
-        this.recordLoginAttempt(username, false);
-        return { success: false, message: 'Invalid credentials' };
+        // Check password
+        if (user.password !== password) {
+            console.log('Invalid password for user:', username);
+            this.recordLoginAttempt(username, false);
+            return { success: false, message: 'Invalid credentials' };
+        }
+        
+        console.log('Login successful for user:', user);
+        this.recordLoginAttempt(username, true);
+        this.currentUser = user;
+        localStorage.setItem('btf_current_user', JSON.stringify(user));
+        return { success: true, user };
     }
 
     async logout() {

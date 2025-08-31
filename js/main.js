@@ -113,8 +113,14 @@ class App {
     initializeLoginForm() {
         const loginForm = document.getElementById('loginForm');
         if (loginForm) {
+            // Remove any existing event listeners
+            loginForm.removeEventListener('submit', this.handleLogin);
+            
+            // Add new event listener with proper binding
             loginForm.addEventListener('submit', (e) => {
                 e.preventDefault();
+                e.stopPropagation();
+                console.log('Login form submitted');
                 this.handleLogin();
             });
         }
@@ -123,9 +129,20 @@ class App {
     async handleLogin() {
         console.log('Login attempt started');
         
+        // Prevent multiple submissions
+        const loginButton = document.getElementById('loginButton');
+        if (loginButton) {
+            loginButton.disabled = true;
+            loginButton.textContent = 'Logging in...';
+        }
+        
         if (!window.authManager) {
             console.log('AuthManager not available');
             Utils.showToast('System is still initializing, please wait...', 'warning');
+            if (loginButton) {
+                loginButton.disabled = false;
+                loginButton.textContent = 'Login';
+            }
             return;
         }
 
@@ -136,26 +153,40 @@ class App {
 
         if (!username || !password) {
             Utils.showToast('Please enter both username and password', 'error');
+            if (loginButton) {
+                loginButton.disabled = false;
+                loginButton.textContent = 'Login';
+            }
             return;
         }
 
         try {
-        const result = await window.authManager.login(username, password);
-        
-        if (result.success) {
-            this.currentUser = result.user;
-            console.log('Login successful:', result.user);
-            Utils.showToast(`Welcome back, ${result.user.username}!`, 'success');
+            const result = await window.authManager.login(username, password);
             
-            // Clear form
-            document.getElementById('loginForm').reset();
-            
-            // Show main app after a brief delay to ensure UI updates
-            setTimeout(() => {
-                this.showMainApp();
-            }, 100);
-        } else {
-            Utils.showToast(result.message || 'Invalid username or password', 'error');
+            if (result.success) {
+                this.currentUser = result.user;
+                console.log('Login successful:', result.user);
+                Utils.showToast(`Welcome back, ${result.user.username}!`, 'success');
+                
+                // Clear form
+                document.getElementById('loginForm').reset();
+                
+                // Show main app after a brief delay to ensure UI updates
+                setTimeout(() => {
+                    this.showMainApp();
+                }, 100);
+            } else {
+                Utils.showToast(result.message || 'Invalid username or password', 'error');
+            }
+        } catch (error) {
+            console.error('Login error:', error);
+            Utils.showToast('An error occurred during login. Please try again.', 'error');
+        } finally {
+            // Re-enable login button
+            if (loginButton) {
+                loginButton.disabled = false;
+                loginButton.textContent = 'Login';
+            }
         }
     }
 
