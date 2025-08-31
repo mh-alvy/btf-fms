@@ -1,6 +1,7 @@
 // Invoice Management
 class InvoiceManager {
     constructor() {
+        this.init();
     }
 
     init() {
@@ -494,5 +495,5 @@ class InvoiceManager {
     }
 }
 
-// Export for main.js initialization
-window.InvoiceManager = InvoiceManager;
+// Global invoice manager instance
+window.invoiceManager = new InvoiceManager();

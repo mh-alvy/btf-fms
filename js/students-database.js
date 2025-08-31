@@ -4,6 +4,7 @@ class StudentsDatabaseManager {
         this.isInitialized = false;
         this.currentFilters = {};
         this.filteredStudents = [];
+        this.init();
     }
 
     init() {
@@ -629,5 +630,5 @@ class StudentsDatabaseManager {
     }
 }
 
-// Export for main.js initialization
-window.StudentsDatabaseManager = StudentsDatabaseManager;
+// Global students database manager instance
+window.studentsDatabaseManager = new StudentsDatabaseManager();

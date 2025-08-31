@@ -2,20 +2,12 @@
 class App {
     constructor() {
         this.currentUser = null;
-        this.managers = {};
+        this.init().catch(console.error);
     }
 
     async init() {
-        console.log('Initializing application...');
-        
-        // Initialize core managers first
-        await this.initializeCoreManagers();
-        
         // Initialize theme
         this.initializeTheme();
-        
-        // Initialize all other managers
-        await this.initializeAllManagers();
         
         // Check for existing user session
         await this.checkUserSession();
@@ -28,96 +20,6 @@ class App {
         
         // Initialize logout
         this.initializeLogout();
-    }
-
-    async initializeCoreManagers() {
-        try {
-            // Initialize storage manager first (required by auth manager)
-            console.log('Initializing storage manager...');
-            if (typeof window.StorageManager === 'function') {
-                window.storageManager = new window.StorageManager();
-            } else {
-                throw new Error('StorageManager class not available');
-            }
-            await window.storageManager.init();
-            
-            // Initialize auth manager second
-            console.log('Initializing auth manager...');
-            if (typeof window.AuthManager === 'function') {
-                window.authManager = new window.AuthManager();
-            } else {
-                throw new Error('AuthManager class not available');
-            }
-            await window.authManager.init();
-            
-            console.log('Core managers initialized successfully');
-        } catch (error) {
-            console.error('Error initializing core managers:', error);
-            console.error('Error details:', error.message);
-            Utils.showToast('Error initializing core systems', 'error');
-            throw error; // Re-throw to prevent further initialization
-        }
-    }
-
-    async initializeAllManagers() {
-        try {
-            // Ensure core managers are available before proceeding
-            if (!window.storageManager || !window.authManager) {
-                throw new Error('Core managers not initialized');
-            }
-            
-            console.log('Initializing all managers...');
-            
-            // Initialize managers in proper order
-            if (typeof window.NavigationManager === 'function') {
-                window.navigationManager = new window.NavigationManager();
-            }
-            if (typeof window.BatchManager === 'function') {
-                window.batchManager = new window.BatchManager();
-            }
-            if (typeof window.StudentManagementManager === 'function') {
-                window.studentManager = new window.StudentManagementManager();
-            }
-            if (typeof window.FeePaymentManager === 'function') {
-                window.feePaymentManager = new window.FeePaymentManager();
-            }
-            if (typeof window.ReportsManager === 'function') {
-                window.reportsManager = new window.ReportsManager();
-            }
-            if (typeof window.UserManagementManager === 'function') {
-                window.userManagementManager = new window.UserManagementManager();
-            }
-            if (typeof window.ReferenceManagementManager === 'function') {
-                window.referenceManagementManager = new window.ReferenceManagementManager();
-            }
-            if (typeof window.StudentsDatabaseManager === 'function') {
-                window.studentsDatabaseManager = new window.StudentsDatabaseManager();
-            }
-            if (typeof window.InvoiceManager === 'function') {
-                window.invoiceManager = new window.InvoiceManager();
-            }
-            if (typeof window.DashboardManager === 'function') {
-                window.dashboardManager = new window.DashboardManager();
-            }
-            
-            // Initialize all managers
-            if (window.navigationManager) await window.navigationManager.init();
-            if (window.batchManager) await window.batchManager.init();
-            if (window.studentManager) await window.studentManager.init();
-            if (window.feePaymentManager) await window.feePaymentManager.init();
-            if (window.reportsManager) await window.reportsManager.init();
-            if (window.userManagementManager) await window.userManagementManager.init();
-            if (window.referenceManagementManager) await window.referenceManagementManager.init();
-            if (window.studentsDatabaseManager) await window.studentsDatabaseManager.init();
-            if (window.invoiceManager) await window.invoiceManager.init();
-            if (window.dashboardManager) await window.dashboardManager.init();
-            
-            console.log('All managers initialized successfully');
-        } catch (error) {
-            console.error('Error initializing managers:', error);
-            console.error('Error details:', error.message);
-            Utils.showToast('Error initializing application components', 'error');
-        }
     }
 
     initializeTheme() {
@@ -154,6 +56,11 @@ class App {
     }
 
     async checkUserSession() {
+        // Wait for auth manager to initialize
+        if (window.authManager && window.authManager.init) {
+            await window.authManager.init();
+        }
+        
         const currentUser = window.authManager?.getCurrentUser();
         console.log('Checking user session:', currentUser);
         if (currentUser) {
@@ -274,7 +181,8 @@ window.logout = function() {
 
 // Initialize application when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
-    // Initialize application
-    window.app = new App();
-    window.app.init().catch(console.error);
+    // Wait for Firebase to be ready
+    setTimeout(() => {
+        window.app = new App();
+    }, 100);
 });

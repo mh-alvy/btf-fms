@@ -2,6 +2,7 @@
 class ReferenceManagementManager {
     constructor() {
         this.isInitialized = false;
+        this.init();
     }
 
     init() {
@@ -249,5 +250,5 @@ class ReferenceManagementManager {
     }
 }
 
-// Export for main.js initialization
-window.ReferenceManagementManager = ReferenceManagementManager;
+// Global reference management manager instance
+window.referenceManagementManager = new ReferenceManagementManager();

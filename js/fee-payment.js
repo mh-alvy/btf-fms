@@ -1,6 +1,7 @@
 class FeePaymentManager {
     constructor() {
         this.isInitialized = false;
+        this.init();
     }
 
     init() {
@@ -754,5 +755,10 @@ class FeePaymentManager {
     }
 }
 
-// Export for main.js initialization
-window.FeePaymentManager = FeePaymentManager;
+// Global fee payment manager instance
+window.feePaymentManager = new FeePaymentManager();
+
+// Initialize when DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+    window.feePaymentManager = new FeePaymentManager();
+});

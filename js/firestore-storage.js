@@ -1,6 +1,5 @@
 // Firestore Storage Manager
 import { db } from './firebase-config.js';
-import { db } from './firebase-config.js';
 import { 
     collection, 
     doc, 
@@ -682,7 +681,5 @@ class FirestoreStorageManager {
     }
 }
 
-// Create global instance for immediate use
-window.FirestoreStorageManager = FirestoreStorageManager;
-
-export { FirestoreStorageManager }
+// Export for use in other modules
+export { FirestoreStorageManager };

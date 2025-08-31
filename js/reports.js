@@ -1,6 +1,7 @@
 // Reports Management
 class ReportsManager {
     constructor() {
+        this.init();
     }
 
     init() {
@@ -773,5 +774,5 @@ class ReportsManager {
     }
 }
 
-// Export for main.js initialization
-window.ReportsManager = ReportsManager;
+// Global reports manager instance
+window.reportsManager = new ReportsManager();
