@@ -755,7 +755,7 @@
     }
     
     .thermal-header .company-details p {
-        font-size: 10px !important;
+        font-size: 12px !important;
         margin: 1px 0;
         color: #000 !important;
         font-weight: bold !important;
@@ -779,7 +779,7 @@
     .invoice-details-row {
         display: flex;
         justify-content: space-between;
-        font-size: 11px !important;
+        font-size: 13px !important;
         margin-bottom: 2px;
         color: #000 !important;
         font-weight: bold !important;
@@ -803,7 +803,7 @@
     .customer-row {
         display: flex;
         justify-content: space-between;
-        font-size: 11px !important;
+        font-size: 13px !important;
         margin-bottom: 2px;
         color: #000 !important;
         font-weight: bold !important;
@@ -830,7 +830,7 @@
     .items-header {
         display: flex;
         justify-content: space-between;
-        font-size: 11px !important;
+        font-size: 13px !important;
         font-weight: 900 !important;
         margin-bottom: 5px;
         color: #000 !important;
@@ -862,7 +862,7 @@
     .item-row {
         display: flex;
         justify-content: space-between;
-        font-size: 11px !important;
+        font-size: 13px !important;
         margin-bottom: 4px;
         align-items: flex-start;
         color: #000 !important;
@@ -875,7 +875,7 @@
     }
     
     .item-row .item-desc small {
-        font-size: 9px !important;
+        font-size: 11px !important;
         color: #000 !important;
         font-weight: bold !important;
     }
@@ -895,7 +895,7 @@
     .total-row {
         display: flex;
         justify-content: space-between;
-        font-size: 11px !important;
+        font-size: 13px !important;
         margin-bottom: 2px;
         color: #000 !important;
         font-weight: bold !important;
@@ -942,7 +942,7 @@
     .payment-row {
         display: flex;
         justify-content: space-between;
-        font-size: 11px !important;
+        font-size: 13px !important;
         margin-bottom: 2px;
         color: #000 !important;
         font-weight: bold !important;
@@ -975,7 +975,7 @@
     }
     
     .footer-note {
-        font-size: 10px !important;
+        font-size: 12px !important;
         margin-bottom: 8px;
         line-height: 1.2;
         color: #000 !important;
@@ -983,7 +983,7 @@
     }
     
     .footer-contact {
-        font-size: 9px !important;
+        font-size: 11px !important;
         color: #000 !important;
         font-weight: bold !important;
     }
