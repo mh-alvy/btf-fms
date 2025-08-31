@@ -67,6 +67,17 @@ class AuthManager {
                     .from('users')
                     .select('id')
                     .eq('username', user.username)
+                    .limit(1);
+
+                if (existingUser && existingUser.length > 0) {
+                    continue; // Skip if user already exists
+                }
+
+                // Check if user already exists
+                const { data: existingUser } = await supabase
+                    .from('users')
+                    .select('id')
+                    .eq('username', user.username)
                     .single();
 
                 // Skip if user already exists

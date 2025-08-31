@@ -25,15 +25,17 @@ export const auth = {
         .select('*')
         .eq('username', username)
         .eq('is_active', true)
-        .single();
+        .limit(1);
 
-      if (userError || !user) {
+      if (userError || !user || user.length === 0) {
         return { success: false, error: 'Invalid username or password' };
       }
 
+      const userData = user[0]; // Get first user from array
+
       // Check if account is locked
-      if (user.locked_until && new Date(user.locked_until) > new Date()) {
-        const lockTime = new Date(user.locked_until).toLocaleTimeString();
+      if (userData.locked_until && new Date(userData.locked_until) > new Date()) {
+        const lockTime = new Date(userData.locked_until).toLocaleTimeString();
         return { 
           success: false, 
           error: `Account locked until ${lockTime}. Too many failed attempts.` 
@@ -41,11 +43,11 @@ export const auth = {
       }
 
       // Verify password (in production, use proper password hashing)
-      const isValidPassword = await this.verifyPassword(password, user.password_hash);
+      const isValidPassword = await this.verifyPassword(password, userData.password_hash);
       
       if (!isValidPassword) {
         // Increment login attempts
-        await this.handleFailedLogin(user.id);
+        await this.handleFailedLogin(userData.id);
         return { success: false, error: 'Invalid username or password' };
       }
 
@@ -57,14 +59,14 @@ export const auth = {
           locked_until: null,
           last_login: new Date().toISOString()
         })
-        .eq('id', user.id);
+        .eq('id', userData.id);
 
       // Create a custom session (since we're not using Supabase auth)
       const session = {
         user: {
-          id: user.id,
-          username: user.username,
-          role: user.role
+          id: userData.id,
+          username: userData.username,
+          role: userData.role
         },
         expires_at: Date.now() + (parseInt(import.meta.env.VITE_SESSION_TIMEOUT) || 3600000)
       };
