@@ -73,19 +73,6 @@ class AuthManager {
                     continue; // Skip if user already exists
                 }
 
-                // Check if user already exists
-                const { data: existingUser } = await supabase
-                    .from('users')
-                    .select('id')
-                    .eq('username', user.username)
-                    .single();
-
-                // Skip if user already exists
-                if (existingUser) {
-                    console.log(`User ${user.username} already exists, skipping creation`);
-                    continue;
-                }
-
                 const { error } = await supabase
                     .from('users')
                     .insert(user);
@@ -102,18 +89,94 @@ class AuthManager {
 
     async login(username, password) {
         try {
-            const result = await auth.signIn(username, password);
-            
-            if (result.success) {
-                this.currentUser = result.user;
-                await logActivity('user_login', `User ${username} logged in`);
+            // First, get the user by username
+            const { data: users, error: userError } = await supabase
+                .from('users')
+                .select('*')
+                .eq('username', username)
+                .eq('is_active', true)
+                .limit(1);
+
+            if (userError || !users || users.length === 0) {
+                return { success: false, error: 'Invalid username or password' };
             }
+
+            const userData = users[0];
+
+            // Check if account is locked
+            if (userData.locked_until && new Date(userData.locked_until) > new Date()) {
+                const lockTime = new Date(userData.locked_until).toLocaleTimeString();
+                return { 
+                    success: false, 
+                    error: `Account locked until ${lockTime}. Too many failed attempts.` 
+                };
+            }
+
+            // Verify password (in production, use proper password hashing)
+            const isValidPassword = password === userData.password_hash;
             
-            return result;
+            if (!isValidPassword) {
+                // Increment login attempts
+                await this.handleFailedLogin(userData.id);
+                return { success: false, error: 'Invalid username or password' };
+            }
+
+            // Reset login attempts and update last login
+            await supabase
+                .from('users')
+                .update({ 
+                    login_attempts: 0, 
+                    locked_until: null,
+                    last_login: new Date().toISOString()
+                })
+                .eq('id', userData.id);
+
+            // Create a custom session
+            const session = {
+                user: {
+                    id: userData.id,
+                    username: userData.username,
+                    role: userData.role
+                },
+                expires_at: Date.now() + (parseInt(import.meta.env.VITE_SESSION_TIMEOUT) || 3600000)
+            };
+
+            localStorage.setItem('btf_session', JSON.stringify(session));
+            this.currentUser = session.user;
+            
+            await logActivity('user_login', `User ${username} logged in`);
+            
+            return { success: true, user: session.user };
         } catch (error) {
             console.error('Login error:', error);
             return { success: false, error: 'An error occurred during login' };
         }
+    }
+
+    async handleFailedLogin(userId) {
+        const maxAttempts = parseInt(import.meta.env.VITE_MAX_LOGIN_ATTEMPTS) || 5;
+        
+        const { data: users } = await supabase
+            .from('users')
+            .select('login_attempts')
+            .eq('id', userId)
+            .limit(1);
+
+        const user = users && users.length > 0 ? users[0] : null;
+        const newAttempts = (user?.login_attempts || 0) + 1;
+        const updates = { login_attempts: newAttempts };
+
+        // Lock account if max attempts reached
+        if (newAttempts >= maxAttempts) {
+            const lockUntil = new Date();
+            lockUntil.setMinutes(lockUntil.getMinutes() + 15); // 15 minute lockout
+            updates.locked_until = lockUntil.toISOString();
+        }
+
+        await supabase
+            .from('users')
+            .update(updates)
+            .eq('id', userId);
     }
 
     async logout() {
@@ -122,9 +185,9 @@ class AuthManager {
                 await logActivity('user_logout', `User ${this.currentUser.username} logged out`);
             }
             
-            const result = await auth.signOut();
+            localStorage.removeItem('btf_session');
             this.currentUser = null;
-            return result;
+            return { success: true };
         } catch (error) {
             console.error('Logout error:', error);
             return { success: false, error: 'An error occurred during logout' };
@@ -133,17 +196,36 @@ class AuthManager {
 
     getCurrentUser() {
         if (!this.currentUser) {
-            this.currentUser = auth.getCurrentUser();
+            try {
+                const session = localStorage.getItem('btf_session');
+                if (!session) return null;
+
+                const parsedSession = JSON.parse(session);
+                
+                // Check if session is expired
+                if (Date.now() > parsedSession.expires_at) {
+                    localStorage.removeItem('btf_session');
+                    return null;
+                }
+
+                this.currentUser = parsedSession.user;
+            } catch (error) {
+                localStorage.removeItem('btf_session');
+                return null;
+            }
         }
         return this.currentUser;
     }
 
     isAuthenticated() {
-        return auth.isAuthenticated();
+        return this.getCurrentUser() !== null;
     }
 
     hasPermission(requiredRoles) {
-        return auth.hasRole(requiredRoles);
+        const user = this.getCurrentUser();
+        if (!user) return false;
+        if (!requiredRoles || requiredRoles.length === 0) return true;
+        return requiredRoles.includes(user.role);
     }
 
     async addUser(username, password, role) {
