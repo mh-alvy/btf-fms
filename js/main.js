@@ -20,7 +20,7 @@ class App {
         this.init();
     }
 
-    async init() {
+    init() {
         console.log('App initialization started');
         
         // Initialize theme first
@@ -28,13 +28,16 @@ class App {
         
         // Wait for DOM to be ready
         if (document.readyState === 'loading') {
-            await new Promise(resolve => {
-                document.addEventListener('DOMContentLoaded', resolve);
+            document.addEventListener('DOMContentLoaded', () => {
+                this.initializeApp();
             });
+        } else {
+            this.initializeApp();
         }
-        
-        // Wait for managers to be available
-        await this.waitForManagers();
+    }
+
+    initializeApp() {
+        console.log('DOM ready, initializing app...');
         
         // Initialize login form immediately
         this.initializeLoginForm();
@@ -47,36 +50,6 @@ class App {
         this.initializeLogout();
         
         console.log('Application initialized successfully');
-    }
-
-    async waitForManagers() {
-        console.log('Waiting for managers...');
-        
-        // Wait for storage manager
-        let attempts = 0;
-        while (!window.storageManager && attempts < 100) {
-            await new Promise(resolve => setTimeout(resolve, 50));
-            attempts++;
-        }
-        
-        if (!window.storageManager) {
-            console.error('StorageManager failed to initialize');
-            return;
-        }
-        
-        // Wait for auth manager
-        attempts = 0;
-        while (!window.authManager && attempts < 100) {
-            await new Promise(resolve => setTimeout(resolve, 50));
-            attempts++;
-        }
-        
-        if (!window.authManager) {
-            console.error('AuthManager failed to initialize');
-            return;
-        }
-        
-        console.log('All managers loaded successfully');
     }
 
     initializeTheme() {
@@ -129,28 +102,38 @@ class App {
         const loginForm = document.getElementById('loginForm');
         const loginButton = document.getElementById('loginButton');
         
-        if (loginForm && loginButton) {
-            // Handle form submission
-            loginForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                console.log('Login form submitted');
-                await this.handleLogin();
-            });
-            
-            // Handle button click
-            loginButton.addEventListener('click', async (e) => {
-                e.preventDefault();
-                console.log('Login button clicked');
-                await this.handleLogin();
-            });
-            
-            console.log('Login form and button event listeners added');
-        } else {
+        if (!loginForm || !loginButton) {
             console.error('Login form or button not found');
+            return;
         }
+
+        // Remove any existing event listeners by cloning elements
+        const newLoginForm = loginForm.cloneNode(true);
+        const newLoginButton = newLoginForm.querySelector('#loginButton');
+        loginForm.parentNode.replaceChild(newLoginForm, loginForm);
+
+        // Add single event listener to prevent form submission
+        newLoginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('Form submit prevented, handling login...');
+            this.handleLogin();
+            return false;
+        });
+
+        // Add click listener to button as backup
+        newLoginButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('Button clicked, handling login...');
+            this.handleLogin();
+            return false;
+        });
+        
+        console.log('Login form event listeners added');
     }
 
-    async handleLogin() {
+    handleLogin() {
         console.log('Login attempt started');
         
         const loginButton = document.getElementById('loginButton');
@@ -193,7 +176,7 @@ class App {
         }
 
         try {
-            const result = await window.authManager.login(username, password);
+            const result = window.authManager.login(username, password);
             
             console.log('Login result:', result);
             
@@ -206,10 +189,8 @@ class App {
                 usernameInput.value = '';
                 passwordInput.value = '';
                 
-                // Show main app with delay to ensure proper state
-                setTimeout(() => {
-                    this.showMainApp();
-                }, 100);
+                // Show main app
+                this.showMainApp();
             } else {
                 console.log('Login failed:', result.message);
                 Utils.showToast(result.message || 'Invalid username or password', 'error');
@@ -269,31 +250,6 @@ class App {
         }
         
         console.log('Main app displayed successfully');
-    }
-
-    updateDemoCredentials() {
-        // Update demo credentials display with environment variables
-        const adminCreds = document.getElementById('adminCredentials');
-        const managerCreds = document.getElementById('managerCredentials');
-        const developerCreds = document.getElementById('developerCredentials');
-        
-        if (adminCreds) {
-            const adminUser = import.meta.env.VITE_DEFAULT_ADMIN_USERNAME || 'admin';
-            const adminPass = import.meta.env.VITE_DEFAULT_ADMIN_PASSWORD || 'admin123';
-            adminCreds.textContent = `${adminUser} / ${adminPass}`;
-        }
-        
-        if (managerCreds) {
-            const managerUser = import.meta.env.VITE_DEFAULT_MANAGER_USERNAME || 'manager';
-            const managerPass = import.meta.env.VITE_DEFAULT_MANAGER_PASSWORD || 'manager123';
-            managerCreds.textContent = `${managerUser} / ${managerPass}`;
-        }
-        
-        if (developerCreds) {
-            const devUser = import.meta.env.VITE_DEFAULT_DEVELOPER_USERNAME || 'developer';
-            const devPass = import.meta.env.VITE_DEFAULT_DEVELOPER_PASSWORD || 'dev123';
-            developerCreds.textContent = `${devUser} / ${devPass}`;
-        }
     }
 
     logout() {
