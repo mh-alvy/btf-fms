@@ -36,6 +36,29 @@ class BatchManager {
                 this.createMonth();
             });
         }
+
+        // Month number dropdown change
+        const monthNumberSelect = document.getElementById('monthNumber');
+        if (monthNumberSelect) {
+            monthNumberSelect.addEventListener('change', () => {
+                this.toggleCustomMonthNumber();
+            });
+        }
+    }
+
+    toggleCustomMonthNumber() {
+        const monthNumberSelect = document.getElementById('monthNumber');
+        const customMonthNumberGroup = document.getElementById('customMonthNumberGroup');
+        const customMonthNumberInput = document.getElementById('customMonthNumber');
+        
+        if (monthNumberSelect.value === 'custom') {
+            customMonthNumberGroup.style.display = 'block';
+            customMonthNumberInput.required = true;
+        } else {
+            customMonthNumberGroup.style.display = 'none';
+            customMonthNumberInput.required = false;
+            customMonthNumberInput.value = '';
+        }
     }
 
     createBatch() {
@@ -95,7 +118,15 @@ class BatchManager {
 
     createMonth() {
         const monthName = Utils.sanitizeInput(document.getElementById('monthName').value);
-        const monthNumber = parseInt(document.getElementById('monthNumber').value);
+        const monthNumberSelect = document.getElementById('monthNumber').value;
+        let monthNumber;
+        
+        if (monthNumberSelect === 'custom') {
+            monthNumber = parseInt(document.getElementById('customMonthNumber').value);
+        } else {
+            monthNumber = parseInt(monthNumberSelect);
+        }
+        
         const courseId = document.getElementById('monthCourse').value;
         const payment = parseFloat(document.getElementById('coursePayment').value);
 
@@ -104,6 +135,10 @@ class BatchManager {
             return;
         }
 
+        if (monthNumber < 1 || monthNumber > 999) {
+            Utils.showToast('Month number must be between 1 and 999', 'error');
+            return;
+        }
         // Check if month already exists for this course
         const existingMonth = window.storageManager.getMonths().find(m => 
             (m.name.toLowerCase() === monthName.toLowerCase() || m.monthNumber === monthNumber) && m.courseId === courseId
@@ -124,6 +159,7 @@ class BatchManager {
         Utils.showToast('Month created successfully', 'success');
         
         document.getElementById('createMonthForm').reset();
+        this.toggleCustomMonthNumber(); // Reset custom input visibility
         this.refresh();
     }
 
