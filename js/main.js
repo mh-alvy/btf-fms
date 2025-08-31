@@ -16,6 +16,7 @@ import './dashboard.js';
 class App {
     constructor() {
         this.currentUser = null;
+        this.authReady = false;
         this.init();
     }
 
@@ -38,16 +39,33 @@ class App {
     initializeApp() {
         console.log('DOM ready, initializing app...');
         
-        // Initialize login form immediately
-        this.initializeLoginForm();
-        
-        // Check for existing user session
-        this.checkUserSession();
-        
-        // Initialize other components
-        this.initializeThemeToggle();
-        
-        console.log('Application initialized successfully');
+        // Wait for auth manager to be ready
+        this.waitForAuthManager(() => {
+            this.authReady = true;
+            console.log('Auth manager ready, setting up login...');
+            
+            // Initialize login form
+            this.initializeLoginForm();
+            
+            // Check for existing user session
+            this.checkUserSession();
+            
+            // Initialize other components
+            this.initializeThemeToggle();
+            
+            console.log('Application initialized successfully');
+        });
+    }
+
+    waitForAuthManager(callback) {
+        if (window.authManager) {
+            callback();
+        } else {
+            console.log('Waiting for auth manager...');
+            setTimeout(() => {
+                this.waitForAuthManager(callback);
+            }, 50);
+        }
     }
 
     initializeTheme() {
@@ -88,28 +106,22 @@ class App {
     initializeLoginForm() {
         console.log('Setting up login form...');
         
-        // Direct event listener on login button
         const loginButton = document.getElementById('loginButton');
         const usernameInput = document.getElementById('username');
         const passwordInput = document.getElementById('password');
         
-        if (!loginButton) {
-            console.error('Login button not found!');
-            return;
-        }
-        
-        if (!usernameInput || !passwordInput) {
-            console.error('Login inputs not found!');
+        if (!loginButton || !usernameInput || !passwordInput) {
+            console.error('Login elements not found!');
             return;
         }
         
         console.log('Login elements found, adding event listeners...');
         
-        // Remove any existing event listeners
-        loginButton.replaceWith(loginButton.cloneNode(true));
-        const newLoginButton = document.getElementById('loginButton');
+        // Remove any existing event listeners by cloning the button
+        const newLoginButton = loginButton.cloneNode(true);
+        loginButton.parentNode.replaceChild(newLoginButton, loginButton);
         
-        // Add click event listener
+        // Add click event listener to the new button
         newLoginButton.addEventListener('click', (e) => {
             console.log('Login button clicked!');
             e.preventDefault();
@@ -138,6 +150,12 @@ class App {
     handleLogin() {
         console.log('handleLogin called');
         
+        if (!this.authReady || !window.authManager) {
+            console.log('Auth system not ready');
+            alert('Authentication system is still loading. Please wait a moment and try again.');
+            return;
+        }
+        
         const loginButton = document.getElementById('loginButton');
         const usernameInput = document.getElementById('username');
         const passwordInput = document.getElementById('password');
@@ -165,12 +183,6 @@ class App {
         }
         
         try {
-            if (!window.authManager) {
-                console.error('AuthManager not available');
-                alert('Authentication system not ready. Please refresh the page.');
-                return;
-            }
-            
             const result = window.authManager.login(username, password);
             console.log('Login result:', result);
             
@@ -240,11 +252,15 @@ class App {
         if (window.dashboardManager) {
             window.dashboardManager.refresh();
         }
-        
         console.log('Main app displayed successfully');
     }
 }
 
-// Initialize application
+// Initialize application after all modules are loaded
 console.log('Starting app initialization...');
-window.app = new App();
+
+// Wait for all modules to load before initializing the app
+setTimeout(() => {
+    console.log('All modules loaded, initializing app...');
+    window.app = new App();
+}, 100);
