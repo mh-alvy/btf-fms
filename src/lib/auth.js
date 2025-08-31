@@ -68,14 +68,19 @@ class AuthManager {
                 
                 if (error) {
                     // Check for unique constraint violation (user already exists)
-                    if (error.code === '23505') {
+                    if (error.code === '23505' || error.message?.includes('duplicate key value violates unique constraint')) {
                         console.warn(`User ${user.username} already exists, skipping creation`);
                     } else {
                         console.error(`Error creating user ${user.username}:`, error);
                     }
                 }
             } catch (error) {
-                console.error(`Error creating user ${user.username}:`, error.message);
+                // Check for unique constraint violation in catch block too
+                if (error.code === '23505' || error.message?.includes('duplicate key value violates unique constraint')) {
+                    console.warn(`User ${user.username} already exists, skipping creation`);
+                } else {
+                    console.error(`Error creating user ${user.username}:`, error.message);
+                }
             }
         }
     }
