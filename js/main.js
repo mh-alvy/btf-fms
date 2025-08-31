@@ -1,24 +1,11 @@
 // Main application initialization
-import './firebase-config.js';
-import './firestore-storage.js';
-
 class App {
     constructor() {
         this.currentUser = null;
-        this.initializationPromise = this.init().catch(console.error);
+        this.init().catch(console.error);
     }
 
     async init() {
-        // Wait for storage manager to initialize
-        if (window.storageManager && window.storageManager.init) {
-            await window.storageManager.init();
-        }
-        
-        // Wait for auth manager to initialize
-        if (window.authManager && window.authManager.init) {
-            await window.authManager.init();
-        }
-        
         // Initialize theme
         this.initializeTheme();
         
@@ -33,8 +20,6 @@ class App {
         
         // Initialize logout
         this.initializeLogout();
-        
-        console.log('Application initialized successfully');
     }
 
     initializeTheme() {
@@ -91,7 +76,7 @@ class App {
         }
     }
 
-    async handleLogin() {
+    handleLogin() {
         const username = document.getElementById('username')?.value.trim();
         const password = document.getElementById('password')?.value.trim();
 
@@ -100,7 +85,7 @@ class App {
             return;
         }
 
-        const result = await window.authManager.login(username, password);
+        const result = window.authManager.login(username, password);
         
         if (result.success) {
             this.currentUser = result.user;
@@ -182,14 +167,14 @@ class App {
     }
 }
 
+// Global logout function
+window.logout = function() {
+    if (window.app) {
+        window.app.logout();
+    }
+};
+
 // Initialize application when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
     window.app = new App();
-    
-    // Global logout function
-    window.logout = function() {
-        if (window.app) {
-            window.app.logout();
-        }
-    };
 });
