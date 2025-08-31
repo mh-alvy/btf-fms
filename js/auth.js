@@ -94,14 +94,14 @@ class AuthManager {
         }
             
         if (currentUsers.length === 0) {
-            await this.createDefaultUsers();
+            this.createDefaultUsers();
             console.log('Created default demo users');
         } else {
             console.log('Existing users found, skipping default user creation');
         }
     }
 
-    async createDefaultUsers() {
+    createDefaultUsers() {
         // Create default users with plain text passwords for demo
         const defaultUsers = [
             {
@@ -124,25 +124,13 @@ class AuthManager {
             }
         ];
 
-        if (this.useFirebase) {
-            // Create users in Firestore
-            for (const userData of defaultUsers) {
-                try {
-                    const user = await window.storageManager.addUser(userData);
-                    this.users.push(user);
-                } catch (error) {
-                    console.error('Error creating default user:', error);
-                }
-            }
-        } else {
-            // Create users in localStorage
-            this.users = defaultUsers.map(user => ({
-                ...user,
-                id: this.generateId(),
-                createdAt: new Date().toISOString()
-            }));
-            this.saveUsers();
-        }
+        // Create users in localStorage for immediate availability
+        this.users = defaultUsers.map(user => ({
+            ...user,
+            id: this.generateId(),
+            createdAt: new Date().toISOString()
+        }));
+        this.saveUsers();
         
         console.log('Default users created:', this.users.map(u => ({ username: u.username, role: u.role })));
     }
