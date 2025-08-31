@@ -11,27 +11,22 @@ class AuthManager {
     initializeDefaultUsers() {
         // Only create default users if none exist and environment variables are set
         if (this.users.length === 0) {
-            // Create a single admin user with random password
-            const randomPassword = this.generateRandomPassword();
-            const defaultUser = { 
-                username: 'admin', 
-                password: this.hashPassword(randomPassword), 
-                role: 'admin' 
-            };
+            // Create default users with simple passwords for demo
+            const defaultUsers = [
+                { username: 'admin', password: 'admin123', role: 'admin' },
+                { username: 'manager', password: 'manager123', role: 'manager' },
+                { username: 'developer', password: 'dev123', role: 'developer' }
+            ];
             
-            // Show the generated password to the user
-            console.warn('🔐 IMPORTANT: Default admin user created!');
-            console.warn('Username: admin');
-            console.warn('Password:', randomPassword);
-            console.warn('Please change this password immediately after first login!');
-            
-            // Also store it temporarily in localStorage for first-time setup
-            localStorage.setItem('btf_first_time_password', randomPassword);
-
-            // Add the default user if it doesn't already exist
-            if (!this.users.find(u => u.username === defaultUser.username)) {
-                this.users.push({ ...defaultUser, id: this.generateId() });
-            }
+            defaultUsers.forEach(userData => {
+                if (!this.users.find(u => u.username === userData.username)) {
+                    this.users.push({
+                        ...userData,
+                        id: this.generateId(),
+                        password: this.hashPassword(userData.password)
+                    });
+                }
+            });
 
             this.saveUsers();
         }
