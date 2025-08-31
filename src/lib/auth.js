@@ -78,6 +78,21 @@ class AuthManager {
                 console.error(`Error creating user ${user.username}:`, error.message);
             }
         }
+    }
+
+    async login(username, password) {
+        try {
+            // Get user from database
+            const { data: users, error } = await supabase
+                .from('users')
+                .select('*')
+                .eq('username', username)
+                .eq('is_active', true)
+                .maybeSingle();
+
+            if (error) {
+                console.error('Database error:', error);
+                return { success: false, error: 'An error occurred during login' };
             }
 
             if (!users) {
