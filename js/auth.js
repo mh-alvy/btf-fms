@@ -94,14 +94,14 @@ class AuthManager {
         }
             
         if (currentUsers.length === 0) {
-            await this.createDefaultUsers();
+            this.createDefaultUsers();
             console.log('Created default demo users');
         } else {
             console.log('Existing users found, skipping default user creation');
         }
     }
 
-    async createDefaultUsers() {
+    createDefaultUsers() {
         // Create default users with plain text passwords for demo
         const defaultUsers = [
             {
@@ -124,25 +124,13 @@ class AuthManager {
             }
         ];
 
-        if (this.useFirebase) {
-            // Create users in Firestore
-            for (const userData of defaultUsers) {
-                try {
-                    const user = await window.storageManager.addUser(userData);
-                    this.users.push(user);
-                } catch (error) {
-                    console.error('Error creating default user:', error);
-                }
-            }
-        } else {
-            // Create users in localStorage
-            this.users = defaultUsers.map(user => ({
-                ...user,
-                id: this.generateId(),
-                createdAt: new Date().toISOString()
-            }));
-            this.saveUsers();
-        }
+        // Create users in localStorage for immediate availability
+        this.users = defaultUsers.map(user => ({
+            ...user,
+            id: this.generateId(),
+            createdAt: new Date().toISOString()
+        }));
+        this.saveUsers();
         
         console.log('Default users created:', this.users.map(u => ({ username: u.username, role: u.role })));
     }
@@ -205,17 +193,48 @@ class AuthManager {
     async login(username, password) {
         console.log('Login attempt:', { username, password });
         
-        // Prevent any potential form submission issues
-        if (!username || !password) {
-            return { success: false, message: 'Username and password are required' };
+        try {
+            // Prevent any potential form submission issues
+            if (!username || !password) {
+                return { success: false, message: 'Username and password are required' };
+            }
+            
+            // Ensure users are loaded
+            if (!this.users || this.users.length === 0) {
+                console.log('Loading users...');
+                this.loadUsers();
+                await this.ensureDefaultUsers();
+            }
+            
+            console.log('Available users for login:', this.users.map(u => ({ username: u.username, role: u.role })));
+            
+            // Find user and verify credentials
+            const user = this.users.find(u => u.username === username);
+            
+            if (!user) {
+                console.log('User not found:', username);
+                this.recordLoginAttempt(username, false);
+                return { success: false, message: 'Invalid username or password' };
+            }
+            
+            // Check password
+            if (user.password !== password) {
+                console.log('Invalid password for user:', username);
+                this.recordLoginAttempt(username, false);
+                return { success: false, message: 'Invalid username or password' };
+            }
+            
+            console.log('Login successful for user:', user);
+            this.recordLoginAttempt(username, true);
+            this.currentUser = user;
+            localStorage.setItem('btf_current_user', JSON.stringify(user));
+            return { success: true, user };
+            
+        } catch (error) {
+            console.error('Login error:', error);
+            return { success: false, message: 'An error occurred during login' };
         }
-        
-        // Ensure users are loaded
-        if (!this.users || this.users.length === 0) {
-            console.log('Loading users...');
-            this.loadUsers();
-            await this.ensureDefaultUsers();
-        }
+    }
         
         console.log('Available users for login:', this.users.map(u => ({ username: u.username, role: u.role })));
         

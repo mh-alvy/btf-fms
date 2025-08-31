@@ -195,6 +195,8 @@ class App {
         try {
             const result = await window.authManager.login(username, password);
             
+            console.log('Login result:', result);
+            
             if (result.success) {
                 this.currentUser = result.user;
                 console.log('Login successful:', result.user);
@@ -204,8 +206,10 @@ class App {
                 usernameInput.value = '';
                 passwordInput.value = '';
                 
-                // Show main app
-                this.showMainApp();
+                // Show main app with delay to ensure proper state
+                setTimeout(() => {
+                    this.showMainApp();
+                }, 100);
             } else {
                 console.log('Login failed:', result.message);
                 Utils.showToast(result.message || 'Invalid username or password', 'error');
@@ -239,6 +243,8 @@ class App {
         const loginModal = document.getElementById('loginModal');
         const mainApp = document.getElementById('app');
         
+        console.log('Showing main app...');
+        
         if (loginModal) {
             loginModal.classList.remove('active');
             document.body.style.overflow = '';
@@ -251,12 +257,18 @@ class App {
         if (window.navigationManager) {
             window.navigationManager.setupRoleBasedNavigation();
             window.navigationManager.navigateTo('dashboard');
+        } else {
+            console.error('NavigationManager not available');
         }
 
         // Refresh dashboard
         if (window.dashboardManager) {
             window.dashboardManager.refresh();
+        } else {
+            console.error('DashboardManager not available');
         }
+        
+        console.log('Main app displayed successfully');
     }
 
     logout() {
