@@ -69,6 +69,12 @@ class AuthManager {
                     .eq('username', user.username)
                     .maybeSingle();
 
+                // If there's an error checking for existing user, skip this user
+                if (checkError) {
+                    console.warn(`Error checking for existing user ${user.username}:`, checkError);
+                    continue;
+                }
+
                 if (existingUser) {
                     continue; // Skip if user already exists
                 }

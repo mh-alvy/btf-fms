@@ -39,9 +39,33 @@ class App {
             this.initializeLogout();
 
             console.log('Application initialized successfully');
+            
+            // Load other modules after managers are initialized
+            await this.loadModules();
         } catch (error) {
             console.error('Failed to initialize application:', error);
             this.showError('Failed to initialize application. Please refresh the page.');
+        }
+    }
+    
+    async loadModules() {
+        try {
+            // Dynamically import all other modules after managers are ready
+            await Promise.all([
+                import('../js/navigation.js'),
+                import('../js/batch-management.js'),
+                import('../js/student-management.js'),
+                import('../js/fee-payment.js'),
+                import('../js/reports.js'),
+                import('../js/user-management.js'),
+                import('../js/reference-management.js'),
+                import('../js/students-database.js'),
+                import('../js/invoice.js'),
+                import('../js/dashboard.js')
+            ]);
+            console.log('All modules loaded successfully');
+        } catch (error) {
+            console.error('Error loading modules:', error);
         }
     }
 
