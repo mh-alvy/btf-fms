@@ -36,6 +36,107 @@
              
         </div>
     </div>
+    
+    <script>
+        // Immediate login button setup
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded, setting up login button...');
+            
+            const loginButton = document.getElementById('loginButton');
+            const usernameInput = document.getElementById('username');
+            const passwordInput = document.getElementById('password');
+            
+            if (loginButton && usernameInput && passwordInput) {
+                console.log('Login elements found, adding event listener...');
+                
+                loginButton.addEventListener('click', function(e) {
+                    console.log('Login button clicked!');
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    const username = usernameInput.value.trim();
+                    const password = passwordInput.value.trim();
+                    
+                    console.log('Attempting login with:', username);
+                    
+                    if (!username || !password) {
+                        alert('Please enter both username and password');
+                        return;
+                    }
+                    
+                    // Wait for authManager to be available
+                    if (!window.authManager) {
+                        console.log('AuthManager not ready, waiting...');
+                        setTimeout(() => {
+                            if (window.authManager) {
+                                performLogin(username, password);
+                            } else {
+                                alert('System is still loading. Please try again in a moment.');
+                            }
+                        }, 100);
+                    } else {
+                        performLogin(username, password);
+                    }
+                });
+                
+                // Enter key support
+                passwordInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        loginButton.click();
+                    }
+                });
+                
+                console.log('Login button event listener added successfully');
+            } else {
+                console.error('Login elements not found:', {
+                    button: !!loginButton,
+                    username: !!usernameInput,
+                    password: !!passwordInput
+                });
+            }
+            
+            function performLogin(username, password) {
+                console.log('Performing login for:', username);
+                
+                const result = window.authManager.login(username, password);
+                console.log('Login result:', result);
+                
+                if (result.success) {
+                    alert(`Welcome back, ${result.user.username}!`);
+                    
+                    // Clear form
+                    usernameInput.value = '';
+                    passwordInput.value = '';
+                    
+                    // Hide login modal and show main app
+                    const loginModal = document.getElementById('loginModal');
+                    const mainApp = document.getElementById('app');
+                    
+                    if (loginModal) {
+                        loginModal.classList.remove('active');
+                        document.body.style.overflow = '';
+                    }
+                    if (mainApp) {
+                        mainApp.style.display = 'flex';
+                    }
+                    
+                    // Setup navigation
+                    if (window.navigationManager) {
+                        window.navigationManager.setupRoleBasedNavigation();
+                        window.navigationManager.navigateTo('dashboard');
+                    }
+                    
+                    // Refresh dashboard
+                    if (window.dashboardManager) {
+                        window.dashboardManager.refresh();
+                    }
+                } else {
+                    alert(result.message || 'Login failed');
+                }
+            }
+        });
+    </script>
 
     <!-- Main Application -->
     <div id="app" class="app-container" style="display: none;">

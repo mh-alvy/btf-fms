@@ -2,6 +2,7 @@
 import './utils.js';
 import './auth.js';
 import './navigation.js';
+import './storage.js';
 import './batch-management.js';
 import './student-management.js';
 import './fee-payment.js';
@@ -85,88 +86,104 @@ class App {
     }
 
     initializeLoginForm() {
-        console.log('Initializing login form...');
+        console.log('Setting up login form...');
         
-        // Use event delegation to handle login button clicks
-        document.addEventListener('click', (e) => {
-            if (e.target && e.target.id === 'loginButton') {
+        // Direct event listener on login button
+        const loginButton = document.getElementById('loginButton');
+        const usernameInput = document.getElementById('username');
+        const passwordInput = document.getElementById('password');
+        
+        if (!loginButton) {
+            console.error('Login button not found!');
+            return;
+        }
+        
+        if (!usernameInput || !passwordInput) {
+            console.error('Login inputs not found!');
+            return;
+        }
+        
+        console.log('Login elements found, adding event listeners...');
+        
+        // Remove any existing event listeners
+        loginButton.replaceWith(loginButton.cloneNode(true));
+        const newLoginButton = document.getElementById('loginButton');
+        
+        // Add click event listener
+        newLoginButton.addEventListener('click', (e) => {
+            console.log('Login button clicked!');
+            e.preventDefault();
+            e.stopPropagation();
+            this.handleLogin();
+        });
+        
+        // Add Enter key support
+        usernameInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
                 e.preventDefault();
-                e.stopPropagation();
-                console.log('Login button clicked via delegation');
-                this.handleLogin();
-                return false;
+                passwordInput.focus();
             }
         });
         
-        // Handle Enter key in password field
-        document.addEventListener('keypress', (e) => {
-            if (e.target && e.target.id === 'password' && e.key === 'Enter') {
+        passwordInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
                 e.preventDefault();
-                e.stopPropagation();
-                console.log('Enter key pressed in password field');
                 this.handleLogin();
-                return false;
             }
         });
         
-        console.log('Login form event delegation set up');
+        console.log('Login form initialized successfully');
     }
 
     handleLogin() {
-        console.log('Login attempt started');
+        console.log('handleLogin called');
         
         const loginButton = document.getElementById('loginButton');
         const usernameInput = document.getElementById('username');
         const passwordInput = document.getElementById('password');
         
         if (!usernameInput || !passwordInput) {
-            console.error('Login form inputs not found');
+            console.error('Login inputs not found during login attempt');
+            alert('Login form not properly initialized');
             return;
-        }
-        
-        // Disable button to prevent multiple clicks
-        if (loginButton) {
-            loginButton.disabled = true;
-            loginButton.textContent = 'Logging in...';
         }
         
         const username = usernameInput.value.trim();
         const password = passwordInput.value.trim();
         
-        console.log('Login credentials:', { username, hasPassword: !!password });
-
+        console.log('Login attempt with:', { username, hasPassword: !!password });
+        
         if (!username || !password) {
             alert('Please enter both username and password');
-            if (loginButton) {
-                loginButton.disabled = false;
-                loginButton.textContent = 'Login';
-            }
             return;
         }
-
-        if (!window.authManager) {
-            console.error('AuthManager not available');
-            alert('System is still initializing, please wait...');
-            if (loginButton) {
-                loginButton.disabled = false;
-                loginButton.textContent = 'Login';
-            }
-            return;
+        
+        // Disable button during login
+        if (loginButton) {
+            loginButton.disabled = true;
+            loginButton.textContent = 'Logging in...';
         }
-
+        
         try {
-            const result = window.authManager.login(username, password);
+            if (!window.authManager) {
+                console.error('AuthManager not available');
+                alert('Authentication system not ready. Please refresh the page.');
+                return;
+            }
             
+            const result = window.authManager.login(username, password);
             console.log('Login result:', result);
             
             if (result.success) {
                 this.currentUser = result.user;
-                console.log('Login successful:', result.user);
-                alert(`Welcome back, ${result.user.username}!`);
+                console.log('Login successful for:', result.user.username);
                 
                 // Clear form
                 usernameInput.value = '';
                 passwordInput.value = '';
+                
+                // Show success message
+                alert(`Welcome back, ${result.user.username}!`);
                 
                 // Show main app
                 this.showMainApp();
@@ -176,7 +193,7 @@ class App {
             }
         } catch (error) {
             console.error('Login error:', error);
-            alert('An error occurred during login. Please try again.');
+            alert('Login failed. Please try again.');
         } finally {
             // Re-enable login button
             if (loginButton) {
@@ -187,6 +204,7 @@ class App {
     }
 
     showLoginModal() {
+        console.log('Showing login modal');
         const loginModal = document.getElementById('loginModal');
         const mainApp = document.getElementById('app');
         
@@ -200,10 +218,9 @@ class App {
     }
 
     showMainApp() {
+        console.log('Showing main app');
         const loginModal = document.getElementById('loginModal');
         const mainApp = document.getElementById('app');
-        
-        console.log('Showing main app...');
         
         if (loginModal) {
             loginModal.classList.remove('active');
@@ -217,31 +234,14 @@ class App {
         if (window.navigationManager) {
             window.navigationManager.setupRoleBasedNavigation();
             window.navigationManager.navigateTo('dashboard');
-        } else {
-            console.error('NavigationManager not available');
         }
 
         // Refresh dashboard
         if (window.dashboardManager) {
             window.dashboardManager.refresh();
-        } else {
-            console.error('DashboardManager not available');
         }
         
         console.log('Main app displayed successfully');
-    }
-
-    logout() {
-        Utils.confirm('Are you sure you want to logout?', () => {
-            window.authManager.logout();
-            this.currentUser = null;
-            this.showLoginModal();
-            
-            // Reset navigation to dashboard
-            window.navigationManager.navigateTo('dashboard');
-            
-            Utils.showToast('Logged out successfully', 'success');
-        });
     }
 }
 

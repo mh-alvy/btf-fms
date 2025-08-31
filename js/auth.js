@@ -8,46 +8,70 @@ class AuthManager {
 
     init() {
         console.log('AuthManager initializing...');
+        this.loadUsers();
         this.createDefaultUsers();
-        console.log('AuthManager initialized with users:', this.users);
+        console.log('AuthManager initialized with users:', this.users.map(u => u.username));
+    }
+
+    loadUsers() {
+        try {
+            const stored = localStorage.getItem('btf_users');
+            if (stored) {
+                this.users = JSON.parse(stored);
+                console.log('Loaded existing users:', this.users.map(u => u.username));
+            } else {
+                this.users = [];
+                console.log('No existing users found');
+            }
+        } catch (e) {
+            console.error('Error loading users:', e);
+            this.users = [];
+        }
     }
 
     createDefaultUsers() {
-        // Create default users immediately
-        this.users = [
-            {
-                id: 'admin_001',
-                username: 'admin',
-                password: 'admin123',
-                role: 'admin',
-                email: 'admin@breakthefear.com',
-                createdAt: new Date().toISOString()
-            },
-            {
-                id: 'manager_001',
-                username: 'manager',
-                password: 'manager123',
-                role: 'manager',
-                email: 'manager@breakthefear.com',
-                createdAt: new Date().toISOString()
-            },
-            {
-                id: 'developer_001',
-                username: 'developer',
-                password: 'dev123',
-                role: 'developer',
-                email: 'developer@breakthefear.com',
-                createdAt: new Date().toISOString()
-            }
-        ];
-        
-        // Save to localStorage
-        localStorage.setItem('btf_users', JSON.stringify(this.users));
-        console.log('Default users created:', this.users.map(u => ({ username: u.username, role: u.role })));
+        // Only create default users if none exist
+        if (this.users.length === 0) {
+            console.log('Creating default users...');
+            
+            this.users = [
+                {
+                    id: 'admin_001',
+                    username: 'admin',
+                    password: 'admin123',
+                    role: 'admin',
+                    email: 'admin@breakthefear.com',
+                    createdAt: new Date().toISOString()
+                },
+                {
+                    id: 'manager_001',
+                    username: 'manager',
+                    password: 'manager123',
+                    role: 'manager',
+                    email: 'manager@breakthefear.com',
+                    createdAt: new Date().toISOString()
+                },
+                {
+                    id: 'developer_001',
+                    username: 'developer',
+                    password: 'dev123',
+                    role: 'developer',
+                    email: 'developer@breakthefear.com',
+                    createdAt: new Date().toISOString()
+                }
+            ];
+            
+            // Save to localStorage
+            localStorage.setItem('btf_users', JSON.stringify(this.users));
+            console.log('Default users created and saved');
+        } else {
+            console.log('Users already exist, skipping default creation');
+        }
     }
 
     login(username, password) {
-        console.log('Login attempt for:', username);
+        console.log('Login attempt for username:', username);
+        console.log('Available users:', this.users.map(u => u.username));
         
         if (!username || !password) {
             console.log('Missing credentials');
@@ -56,7 +80,7 @@ class AuthManager {
         
         // Find user
         const user = this.users.find(u => u.username === username);
-        console.log('User found:', user ? user.username : 'none');
+        console.log('User found:', user ? `${user.username} (${user.role})` : 'none');
         
         if (!user) {
             console.log('User not found');
@@ -65,12 +89,12 @@ class AuthManager {
         
         // Check password
         if (user.password !== password) {
-            console.log('Invalid password');
+            console.log('Invalid password for user:', username);
             return { success: false, message: 'Invalid username or password' };
         }
         
         // Login successful
-        console.log('Login successful');
+        console.log('Login successful for:', user.username);
         this.currentUser = user;
         localStorage.setItem('btf_current_user', JSON.stringify(user));
         return { success: true, user };
@@ -79,6 +103,7 @@ class AuthManager {
     logout() {
         this.currentUser = null;
         localStorage.removeItem('btf_current_user');
+        console.log('User logged out');
     }
 
     getCurrentUser() {
@@ -87,7 +112,9 @@ class AuthManager {
             if (stored) {
                 try {
                     this.currentUser = JSON.parse(stored);
+                    console.log('Restored user session:', this.currentUser.username);
                 } catch (e) {
+                    console.error('Error restoring user session:', e);
                     localStorage.removeItem('btf_current_user');
                 }
             }
@@ -180,3 +207,7 @@ class AuthManager {
 
 // Global auth manager instance
 window.authManager = new AuthManager();
+
+// Initialize application
+console.log('Starting app initialization...');
+window.app = new App();
