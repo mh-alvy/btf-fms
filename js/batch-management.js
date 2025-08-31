@@ -44,8 +44,29 @@ class BatchManager {
                 this.toggleCustomMonthNumber();
             });
         }
+
+        // Month name dropdown change
+        const monthNameSelect = document.getElementById('monthName');
+        if (monthNameSelect) {
+            monthNameSelect.addEventListener('change', () => {
+                this.toggleCustomMonthName();
+            });
+        }
     }
 
+    toggleCustomMonthName() {
+        const monthNameSelect = document.getElementById('monthName');
+        const customMonthNameInput = document.getElementById('customMonthName');
+        
+        if (monthNameSelect.value === 'custom') {
+            customMonthNameInput.style.display = 'block';
+            customMonthNameInput.required = true;
+        } else {
+            customMonthNameInput.style.display = 'none';
+            customMonthNameInput.required = false;
+            customMonthNameInput.value = '';
+        }
+    }
     toggleCustomMonthNumber() {
         const monthNumberSelect = document.getElementById('monthNumber');
         const customMonthNumberGroup = document.getElementById('customMonthNumberGroup');
@@ -117,7 +138,15 @@ class BatchManager {
     }
 
     createMonth() {
-        const monthName = Utils.sanitizeInput(document.getElementById('monthName').value);
+        const monthNameSelect = document.getElementById('monthName').value;
+        let monthName;
+        
+        if (monthNameSelect === 'custom') {
+            monthName = Utils.sanitizeInput(document.getElementById('customMonthName').value);
+        } else {
+            monthName = monthNameSelect;
+        }
+        
         const monthNumberSelect = document.getElementById('monthNumber').value;
         let monthNumber;
         
@@ -159,6 +188,7 @@ class BatchManager {
         Utils.showToast('Month created successfully', 'success');
         
         document.getElementById('createMonthForm').reset();
+        this.toggleCustomMonthName(); // Reset custom name input visibility
         this.toggleCustomMonthNumber(); // Reset custom input visibility
         this.refresh();
     }
