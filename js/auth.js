@@ -1,63 +1,60 @@
 // Authentication System
 class AuthManager {
     constructor() {
-        this.users = this.loadUsers();
+        this.users = [];
         this.currentUser = null;
         this.maxLoginAttempts = 5;
         this.loginAttempts = this.loadLoginAttempts();
-        this.initializeDefaultUsers();
+        this.initializeSystem();
     }
 
-    initializeDefaultUsers() {
-        // Only create default users if none exist and environment variables are set
-        if (this.users.length === 0) {
-            // Create default users with simple passwords for demo
-            const defaultUsers = [
-                { username: 'admin', password: 'admin123', role: 'admin' },
-                { username: 'manager', password: 'manager123', role: 'manager' },
-                { username: 'developer', password: 'dev123', role: 'developer' }
-            ];
-            
-            defaultUsers.forEach(userData => {
-                if (!this.users.find(u => u.username === userData.username)) {
-                    this.users.push({
-                        id: this.generateId(),
-                        username: userData.username,
-                        password: this.hashPassword(userData.password),
-                        role: userData.role,
-                        createdAt: new Date().toISOString()
-                    });
-                }
-            });
-
-            this.saveUsers();
-            console.log('Default users created with demo credentials');
-        }
+    initializeSystem() {
+        // Clear any existing corrupted data
+        localStorage.removeItem('btf_users');
+        localStorage.removeItem('btf_current_user');
+        localStorage.removeItem('btf_login_attempts');
+        
+        // Create fresh default users
+        this.createDefaultUsers();
+        console.log('Authentication system initialized with demo credentials');
     }
 
-    generateRandomPassword() {
-        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
-        let password = '';
-        for (let i = 0; i < 12; i++) {
-            password += chars.charAt(Math.floor(Math.random() * chars.length));
-        }
-        return password;
-    }
+    createDefaultUsers() {
+        // Create default users with plain text passwords for demo
+        const defaultUsers = [
+            {
+                id: 'user_admin_001',
+                username: 'admin',
+                password: 'admin123', // Plain text for demo
+                role: 'admin',
+                createdAt: new Date().toISOString()
+            },
+            {
+                id: 'user_manager_001',
+                username: 'manager',
+                password: 'manager123', // Plain text for demo
+                role: 'manager',
+                createdAt: new Date().toISOString()
+            },
+            {
+                id: 'user_developer_001',
+                username: 'developer',
+                password: 'dev123', // Plain text for demo
+                role: 'developer',
+                createdAt: new Date().toISOString()
+            }
+        ];
 
-    // Simple hash function (in production, use bcrypt or similar)
-    hashPassword(password) {
-        let hash = 0;
-        if (password.length === 0) return hash.toString();
-        for (let i = 0; i < password.length; i++) {
-            const char = password.charCodeAt(i);
-            hash = ((hash << 5) - hash) + char;
-            hash = hash & hash; // Convert to 32-bit integer
-        }
-        return Math.abs(hash).toString(36);
+        this.users = defaultUsers;
+        this.saveUsers();
     }
 
     loadLoginAttempts() {
-        return JSON.parse(localStorage.getItem('btf_login_attempts') || '{}');
+        try {
+            return JSON.parse(localStorage.getItem('btf_login_attempts') || '{}');
+        } catch (e) {
+            return {};
+        }
     }
 
     saveLoginAttempts() {
@@ -97,10 +94,6 @@ class AuthManager {
         this.saveLoginAttempts();
     }
 
-    loadUsers() {
-        return JSON.parse(localStorage.getItem('btf_users') || '[]');
-    }
-
     saveUsers() {
         localStorage.setItem('btf_users', JSON.stringify(this.users));
     }
@@ -110,6 +103,8 @@ class AuthManager {
     }
 
     login(username, password) {
+        console.log('Login attempt:', { username, password });
+        
         // Check if account is locked
         if (this.isAccountLocked(username)) {
             return { 
@@ -118,8 +113,11 @@ class AuthManager {
             };
         }
 
-        const hashedPassword = this.hashPassword(password);
-        const user = this.users.find(u => u.username === username && u.password === hashedPassword);
+        // Simple direct comparison for demo credentials
+        const user = this.users.find(u => u.username === username && u.password === password);
+        
+        console.log('Available users:', this.users);
+        console.log('Found user:', user);
         
         if (user) {
             this.recordLoginAttempt(username, true);
@@ -141,7 +139,11 @@ class AuthManager {
         if (!this.currentUser) {
             const stored = localStorage.getItem('btf_current_user');
             if (stored) {
-                this.currentUser = JSON.parse(stored);
+                try {
+                    this.currentUser = JSON.parse(stored);
+                } catch (e) {
+                    localStorage.removeItem('btf_current_user');
+                }
             }
         }
         return this.currentUser;
@@ -161,8 +163,9 @@ class AuthManager {
         const newUser = {
             id: this.generateId(),
             username,
-            password: this.hashPassword(password),
-            role
+            password, // Store as plain text for demo
+            role,
+            createdAt: new Date().toISOString()
         };
 
         this.users.push(newUser);
@@ -179,11 +182,6 @@ class AuthManager {
         // Check if username already exists (for other users)
         if (updates.username && this.users.find(u => u.username === updates.username && u.id !== id)) {
             return { success: false, message: 'Username already exists' };
-        }
-
-        // Hash password if it's being updated
-        if (updates.password) {
-            updates.password = this.hashPassword(updates.password);
         }
         
         this.users[userIndex] = { ...this.users[userIndex], ...updates };
