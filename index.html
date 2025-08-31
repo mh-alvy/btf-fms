@@ -65,6 +65,7 @@
                 <button class="nav-item" data-page="pay-fee">Pay Fee</button>
                 <button class="nav-item" data-page="reports" data-roles="admin,developer">Reports</button>
                 <button class="nav-item" data-page="discount-reports" data-roles="admin,developer">Discount Reports</button>
+                <button class="nav-item" data-page="reference-management" data-roles="developer">Reference Management</button>
                 <button class="nav-item" data-page="user-management" data-roles="developer">User Management</button>
             </div>
         </nav>
@@ -458,11 +459,17 @@
                                 <div class="form-row">
                                     <div class="form-group">
                                         <label for="reference">Reference</label>
-                                        <input type="text" id="reference">
+                                        <select id="referenceSelect" onchange="feePaymentManager.toggleCustomReference()">
+                                            <option value="">Select Reference</option>
+                                        </select>
+                                        <input type="text" id="referenceCustom" placeholder="Enter custom reference" style="display: none; margin-top: 8px;">
                                     </div>
                                     <div class="form-group">
                                         <label for="receivedBy">Payment Received By</label>
-                                        <input type="text" id="receivedBy" required>
+                                        <select id="receivedBySelect" onchange="feePaymentManager.toggleCustomReceivedBy()" required>
+                                            <option value="">Select Receiver</option>
+                                        </select>
+                                        <input type="text" id="receivedByCustom" placeholder="Enter custom receiver name" style="display: none; margin-top: 8px;" required>
                                     </div>
                                 </div>
                                 <button type="submit" class="btn btn-primary">Process Payment</button>
@@ -542,6 +549,46 @@
                 </div>
             </section>
 
+            <!-- Reference Management -->
+            <section id="reference-management" class="page">
+                <div class="page-header">
+                    <h2>Reference Management</h2>
+                </div>
+                <div class="management-grid">
+                    <!-- Manage Reference Options -->
+                    <div class="management-card">
+                        <h3>Manage Reference Options</h3>
+                        <form id="addReferenceForm">
+                            <div class="form-group">
+                                <label for="newReference">Reference Option</label>
+                                <input type="text" id="newReference" placeholder="e.g., Cash Payment, Bank Transfer" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Add Reference</button>
+                        </form>
+                        <div class="entity-list">
+                            <h4>Existing Reference Options</h4>
+                            <div id="referenceOptionsList"></div>
+                        </div>
+                    </div>
+
+                    <!-- Manage Received By Options -->
+                    <div class="management-card">
+                        <h3>Manage Received By Options</h3>
+                        <form id="addReceivedByForm">
+                            <div class="form-group">
+                                <label for="newReceivedBy">Receiver Name</label>
+                                <input type="text" id="newReceivedBy" placeholder="e.g., John Doe, Reception Desk" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Add Receiver</button>
+                        </form>
+                        <div class="entity-list">
+                            <h4>Existing Receiver Options</h4>
+                            <div id="receivedByOptionsList"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
             <!-- User Management -->
             <section id="user-management" class="page">
                 <div class="page-header">
@@ -613,6 +660,7 @@
     <script src="js/fee-payment.js"></script>
     <script src="js/reports.js"></script>
     <script src="js/user-management.js"></script>
+    <script src="js/reference-management.js"></script>
     <script src="js/students-database.js"></script>
     <script src="js/invoice.js"></script>
     <script src="js/dashboard.js"></script>
