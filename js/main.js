@@ -160,7 +160,7 @@ class App {
         console.log('Login credentials:', { username, hasPassword: !!password });
 
         if (!username || !password) {
-            Utils.showToast('Please enter both username and password', 'error');
+            alert('Please enter both username and password');
             if (loginButton) {
                 loginButton.disabled = false;
                 loginButton.textContent = 'Login';
@@ -170,7 +170,7 @@ class App {
 
         if (!window.authManager) {
             console.error('AuthManager not available');
-            Utils.showToast('System is still initializing, please wait...', 'warning');
+            alert('System is still initializing, please wait...');
             if (loginButton) {
                 loginButton.disabled = false;
                 loginButton.textContent = 'Login';
@@ -186,7 +186,7 @@ class App {
             if (result.success) {
                 this.currentUser = result.user;
                 console.log('Login successful:', result.user);
-                Utils.showToast(`Welcome back, ${result.user.username}!`, 'success');
+                console.log(`Welcome back, ${result.user.username}!`);
                 
                 // Clear form
                 usernameInput.value = '';
@@ -196,11 +196,11 @@ class App {
                 this.showMainApp();
             } else {
                 console.log('Login failed:', result.message);
-                Utils.showToast(result.message || 'Invalid username or password', 'error');
+                alert(result.message || 'Invalid username or password');
             }
         } catch (error) {
             console.error('Login error:', error);
-            Utils.showToast('An error occurred during login. Please try again.', 'error');
+            alert('An error occurred during login. Please try again.');
         } finally {
             // Re-enable login button
             if (loginButton) {
