@@ -2,7 +2,6 @@
 class StudentManagementManager {
     constructor() {
         this.isInitialized = false;
-        this.init();
     }
 
     init() {
@@ -544,5 +543,5 @@ class StudentManagementManager {
     }
 }
 
-// Global student management manager instance
-window.studentManager = new StudentManagementManager();
+// Export for main.js initialization
+window.StudentManagementManager = StudentManagementManager;

@@ -8,5 +8,5 @@ class StorageManager extends FirestoreStorageManager {
     }
 }
 
-// Global storage manager instance
-window.storageManager = new StorageManager();
+// Export for main.js initialization
+window.StorageManager = StorageManager;

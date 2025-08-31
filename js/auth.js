@@ -1,13 +1,10 @@
 // Authentication System - Updated to use Firestore
-import { FirestoreStorageManager } from './firestore-storage.js';
 
 class AuthManager {
     constructor() {
-        this.firestoreManager = new FirestoreStorageManager();
         this.currentUser = null;
         this.maxLoginAttempts = 5;
         this.loginAttempts = this.loadLoginAttempts();
-        this.init();
     }
 
     async init() {
@@ -18,8 +15,8 @@ class AuthManager {
     async loadUsers() {
         try {
             // Try to load from Firestore first
-            if (this.firestoreManager.cache.users) {
-                this.users = this.firestoreManager.cache.users;
+            if (window.storageManager && window.storageManager.cache.users) {
+                this.users = window.storageManager.cache.users;
             } else {
                 // Fallback to localStorage
                 const storedUsers = localStorage.getItem('btf_users');
@@ -74,7 +71,7 @@ class AuthManager {
         // Add users to Firestore
         for (const user of defaultUsers) {
             try {
-                await this.firestoreManager.addUser(user);
+                await window.storageManager.addUser(user);
             } catch (error) {
                 console.error('Error creating default user:', error);
                 // Fallback to localStorage
@@ -82,7 +79,7 @@ class AuthManager {
             }
         }
         
-        this.users = this.firestoreManager.getUsers();
+        this.users = window.storageManager.getUsers();
         this.saveUsersToLocalStorage();
         console.log('Default users created:', this.users.map(u => ({ username: u.username, role: u.role })));
     }
@@ -144,7 +141,7 @@ class AuthManager {
         console.log('Login attempt:', { username, password });
         
         // Ensure users are loaded
-        this.users = this.firestoreManager.getUsers();
+        this.users = window.storageManager.getUsers();
         
         // Check if account is locked
         if (this.isAccountLocked(username)) {
@@ -211,8 +208,8 @@ class AuthManager {
         };
 
         try {
-            await this.firestoreManager.addUser(newUser);
-            this.users = this.firestoreManager.getUsers();
+            await window.storageManager.addUser(newUser);
+            this.users = window.storageManager.getUsers();
             this.saveUsersToLocalStorage();
         } catch (error) {
             console.error('Error adding user to Firestore:', error);
@@ -236,8 +233,8 @@ class AuthManager {
         }
         
         try {
-            await this.firestoreManager.updateUser(id, updates);
-            this.users = this.firestoreManager.getUsers();
+            await window.storageManager.updateUser(id, updates);
+            this.users = window.storageManager.getUsers();
             this.saveUsersToLocalStorage();
         } catch (error) {
             console.error('Error updating user in Firestore:', error);
@@ -265,8 +262,8 @@ class AuthManager {
         }
 
         try {
-            await this.firestoreManager.deleteUser(id);
-            this.users = this.firestoreManager.getUsers();
+            await window.storageManager.deleteUser(id);
+            this.users = window.storageManager.getUsers();
             this.saveUsersToLocalStorage();
         } catch (error) {
             console.error('Error deleting user from Firestore:', error);
@@ -279,7 +276,7 @@ class AuthManager {
     }
 
     getAllUsers() {
-        this.users = this.firestoreManager.getUsers();
+        this.users = window.storageManager.getUsers();
         return this.users.map(user => ({
             id: user.id,
             username: user.username,
@@ -288,5 +285,5 @@ class AuthManager {
     }
 }
 
-// Global auth manager instance
-window.authManager = new AuthManager();
+// Export for main.js initialization
+window.AuthManager = AuthManager;

@@ -1,7 +1,6 @@
 // Dashboard Management
 class DashboardManager {
     constructor() {
-        this.init();
     }
 
     init() {
@@ -149,5 +148,5 @@ class DashboardManager {
     }
 }
 
-// Global dashboard manager instance
-window.dashboardManager = new DashboardManager();
+// Export for main.js initialization
+window.DashboardManager = DashboardManager;

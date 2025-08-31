@@ -1,7 +1,6 @@
 // Batch Management
 class BatchManager {
     constructor() {
-        this.init();
     }
 
     init() {
@@ -412,5 +411,5 @@ class BatchManager {
     }
 }
 
-// Global batch manager instance
-window.batchManager = new BatchManager();
+// Export for main.js initialization
+window.BatchManager = BatchManager;

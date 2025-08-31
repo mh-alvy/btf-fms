@@ -3,7 +3,6 @@ class NavigationManager {
     constructor() {
         this.currentPage = 'dashboard';
         this.isInitialized = false;
-        this.init();
     }
 
     init() {
@@ -196,5 +195,5 @@ class NavigationManager {
     }
 }
 
-// Global navigation manager instance
-window.navigationManager = new NavigationManager();
+// Export for main.js initialization
+window.NavigationManager = NavigationManager;
