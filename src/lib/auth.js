@@ -95,13 +95,18 @@ class AuthManager {
                 .select('*')
                 .eq('username', username)
                 .eq('is_active', true)
-                .limit(1);
+                .maybeSingle();
 
-            if (userError || !users || users.length === 0) {
+            if (userError) {
+                console.error('Database error:', userError);
+                return { success: false, error: 'Database connection error' };
+            }
+
+            if (!users) {
                 return { success: false, error: 'Invalid username or password' };
             }
 
-            const userData = users[0];
+            const userData = users;
 
             // Check if account is locked
             if (userData.locked_until && new Date(userData.locked_until) > new Date()) {
@@ -156,13 +161,12 @@ class AuthManager {
     async handleFailedLogin(userId) {
         const maxAttempts = parseInt(import.meta.env.VITE_MAX_LOGIN_ATTEMPTS) || 5;
         
-        const { data: users } = await supabase
+        const { data: user } = await supabase
             .from('users')
             .select('login_attempts')
             .eq('id', userId)
-            .limit(1);
+            .maybeSingle();
 
-        const user = users && users.length > 0 ? users[0] : null;
         const newAttempts = (user?.login_attempts || 0) + 1;
         const updates = { login_attempts: newAttempts };
 
