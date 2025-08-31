@@ -52,7 +52,7 @@ class NavigationManager {
         const requiredRoles = navItem?.dataset.roles?.split(',') || [];
         
         if (!window.authManager.hasPermission(requiredRoles)) {
-            Utils.showToast('You do not have permission to access this page', 'error');
+            window.utils.showToast('You do not have permission to access this page', 'error');
             return;
         }
 
@@ -175,7 +175,7 @@ class NavigationManager {
     }
 
     logout() {
-        Utils.confirm('Are you sure you want to logout?', () => {
+        window.utils.confirm('Are you sure you want to logout?', () => {
             window.authManager.logout();
             this.showLoginModal();
         });

@@ -67,9 +67,9 @@ class AuthManager {
                     .from('users')
                     .select('id')
                     .eq('username', user.username)
-                    .limit(1);
+                    .maybeSingle();
 
-                if (existingUser && existingUser.length > 0) {
+                if (existingUser) {
                     continue; // Skip if user already exists
                 }
 
@@ -243,7 +243,7 @@ class AuthManager {
                 .from('users')
                 .select('id')
                 .eq('username', username)
-                .single();
+                .maybeSingle();
 
             if (existingUser) {
                 return { success: false, message: 'Username already exists' };
@@ -283,7 +283,7 @@ class AuthManager {
                     .select('id')
                     .eq('username', updates.username)
                     .neq('id', id)
-                    .single();
+                    .maybeSingle();
 
                 if (existingUser) {
                     return { success: false, message: 'Username already exists' };
@@ -324,7 +324,7 @@ class AuthManager {
                 .from('users')
                 .select('username, role')
                 .eq('id', id)
-                .single();
+                .maybeSingle();
 
             if (!user) {
                 return { success: false, message: 'User not found' };

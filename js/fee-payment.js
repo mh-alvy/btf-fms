@@ -292,7 +292,7 @@ class FeePaymentManager {
                                 Utils.formatCurrency(month.payment) : 
                                 (totalCovered > 0 ? 
                                     `${Utils.formatCurrency(remainingDue)} due (${Utils.formatCurrency(totalPaid)} paid${totalDiscount > 0 ? `, ${Utils.formatCurrency(totalDiscount)} discount` : ''})` : 
-                                    `${window.utils.formatCurrency(remainingDue)} due (${window.utils.formatCurrency(totalPaid)} paid${totalDiscount > 0 ? `, ${window.utils.formatCurrency(totalDiscount)} discount` : ''})` : 
+                                    \`${window.utils.formatCurrency(remainingDue)} due (${window.utils.formatCurrency(totalPaid)} paid${totalDiscount > 0 ? `, ${window.utils.formatCurrency(totalDiscount)} discount` : ''})` : 
                                     window.utils.formatCurrency(month.payment)
                                 )
                             }
