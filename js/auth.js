@@ -193,47 +193,38 @@ class AuthManager {
     async login(username, password) {
         console.log('Login attempt:', { username, password });
         
-        try {
-            // Prevent any potential form submission issues
-            if (!username || !password) {
-                return { success: false, message: 'Username and password are required' };
-            }
-            
-            // Ensure users are loaded
-            if (!this.users || this.users.length === 0) {
-                console.log('Loading users...');
-                this.loadUsers();
-                await this.ensureDefaultUsers();
-            }
-            
-            console.log('Available users for login:', this.users.map(u => ({ username: u.username, role: u.role })));
-            
-            // Find user and verify credentials
-            const user = this.users.find(u => u.username === username);
-            
-            if (!user) {
-                console.log('User not found:', username);
-                this.recordLoginAttempt(username, false);
-                return { success: false, message: 'Invalid username or password' };
-            }
-            
-            // Check password
-            if (user.password !== password) {
-                console.log('Invalid password for user:', username);
-                this.recordLoginAttempt(username, false);
-                return { success: false, message: 'Invalid username or password' };
-            }
-            
-            console.log('Login successful for user:', user);
-            this.recordLoginAttempt(username, true);
-            this.currentUser = user;
-            localStorage.setItem('btf_current_user', JSON.stringify(user));
-            return { success: true, user };
-            
-        } catch (error) {
-            console.error('Login error:', error);
-            return { success: false, message: 'An error occurred during login' };
+        // Prevent any potential form submission issues
+        if (!username || !password) {
+            return { success: false, message: 'Username and password are required' };
         }
+        
+        // Ensure users are loaded
+        if (!this.users || this.users.length === 0) {
+            console.log('Loading users...');
+            this.loadUsers();
+            this.ensureDefaultUsers();
+        }
+        
+        console.log('Available users for login:', this.users.map(u => ({ username: u.username, role: u.role })));
+        
+        // Find user and verify credentials
+        const user = this.users.find(u => u.username === username);
+        
+        if (!user) {
+            console.log('User not found:', username);
+            return { success: false, message: 'Invalid username or password' };
+        }
+        
+        // Check password
+        if (user.password !== password) {
+            console.log('Invalid password for user:', username);
+            return { success: false, message: 'Invalid username or password' };
+        }
+        
+        console.log('Login successful for user:', user);
+        this.currentUser = user;
+        localStorage.setItem('btf_current_user', JSON.stringify(user));
+        return { success: true, user };
     }
 
     async logout() {
