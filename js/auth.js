@@ -105,22 +105,22 @@ class AuthManager {
         // Create default users with plain text passwords for demo
         const defaultUsers = [
             {
-                username: 'admin',
-                password: 'admin123', // Plain text for demo
+                username: import.meta.env.VITE_DEFAULT_ADMIN_USERNAME || 'admin',
+                password: import.meta.env.VITE_DEFAULT_ADMIN_PASSWORD || 'admin123',
                 role: 'admin',
-                email: 'admin@breakthefear.com'
+                email: `${import.meta.env.VITE_DEFAULT_ADMIN_USERNAME || 'admin'}@breakthefear.com`
             },
             {
-                username: 'manager',
-                password: 'manager123', // Plain text for demo
+                username: import.meta.env.VITE_DEFAULT_MANAGER_USERNAME || 'manager',
+                password: import.meta.env.VITE_DEFAULT_MANAGER_PASSWORD || 'manager123',
                 role: 'manager',
-                email: 'manager@breakthefear.com'
+                email: `${import.meta.env.VITE_DEFAULT_MANAGER_USERNAME || 'manager'}@breakthefear.com`
             },
             {
-                username: 'developer',
-                password: 'dev123', // Plain text for demo
+                username: import.meta.env.VITE_DEFAULT_DEVELOPER_USERNAME || 'developer',
+                password: import.meta.env.VITE_DEFAULT_DEVELOPER_PASSWORD || 'dev123',
                 role: 'developer',
-                email: 'developer@breakthefear.com'
+                email: `${import.meta.env.VITE_DEFAULT_DEVELOPER_USERNAME || 'developer'}@breakthefear.com`
             }
         ];
 

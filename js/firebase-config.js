@@ -4,13 +4,13 @@ import { getFirestore } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDcGGjtPi3vDgRAcMo57S_sTNn_h-VaB-s",
-  authDomain: "btf-fee-management-system.firebaseapp.com",
-  projectId: "btf-fee-management-system",
-  storageBucket: "btf-fee-management-system.firebasestorage.app",
-  messagingSenderId: "54551582618",
-  appId: "1:54551582618:web:73ba3524f436fb91204c23",
-  measurementId: "G-T5DCRENX0N"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 };
 
 // Initialize Firebase
