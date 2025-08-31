@@ -1,19 +1,33 @@
-// Authentication System
+// Authentication System - Updated to use Firestore
+import { FirestoreStorageManager } from './firestore-storage.js';
+
 class AuthManager {
     constructor() {
-        this.users = [];
+        this.firestoreManager = new FirestoreStorageManager();
         this.currentUser = null;
         this.maxLoginAttempts = 5;
         this.loginAttempts = this.loadLoginAttempts();
-        this.loadUsers();
-        this.ensureDefaultUsers();
+        this.init();
     }
 
-    loadUsers() {
+    async init() {
+        await this.loadUsers();
+        await this.ensureDefaultUsers();
+    }
+
+    async loadUsers() {
         try {
-            const storedUsers = localStorage.getItem('btf_users');
-            if (storedUsers) {
-                this.users = JSON.parse(storedUsers);
+            // Try to load from Firestore first
+            if (this.firestoreManager.cache.users) {
+                this.users = this.firestoreManager.cache.users;
+            } else {
+                // Fallback to localStorage
+                const storedUsers = localStorage.getItem('btf_users');
+                if (storedUsers) {
+                    this.users = JSON.parse(storedUsers);
+                } else {
+                    this.users = [];
+                }
             }
         } catch (e) {
             console.error('Error loading users:', e);
@@ -21,17 +35,17 @@ class AuthManager {
         }
     }
 
-    ensureDefaultUsers() {
+    async ensureDefaultUsers() {
         // Only create default users if no users exist
         if (this.users.length === 0) {
-            this.createDefaultUsers();
+            await this.createDefaultUsers();
             console.log('Created default demo users');
         } else {
             console.log('Existing users found, skipping default user creation');
         }
     }
 
-    createDefaultUsers() {
+    async createDefaultUsers() {
         // Create default users with plain text passwords for demo
         const defaultUsers = [
             {
@@ -57,8 +71,19 @@ class AuthManager {
             }
         ];
 
-        this.users = defaultUsers;
-        this.saveUsers();
+        // Add users to Firestore
+        for (const user of defaultUsers) {
+            try {
+                await this.firestoreManager.addUser(user);
+            } catch (error) {
+                console.error('Error creating default user:', error);
+                // Fallback to localStorage
+                this.users.push(user);
+            }
+        }
+        
+        this.users = this.firestoreManager.getUsers();
+        this.saveUsersToLocalStorage();
         console.log('Default users created:', this.users.map(u => ({ username: u.username, role: u.role })));
     }
 
@@ -72,6 +97,10 @@ class AuthManager {
 
     saveLoginAttempts() {
         localStorage.setItem('btf_login_attempts', JSON.stringify(this.loginAttempts));
+    }
+
+    saveUsersToLocalStorage() {
+        localStorage.setItem('btf_users', JSON.stringify(this.users));
     }
 
     isAccountLocked(username) {
@@ -107,16 +136,15 @@ class AuthManager {
         this.saveLoginAttempts();
     }
 
-    saveUsers() {
-        localStorage.setItem('btf_users', JSON.stringify(this.users));
-    }
-
     generateId() {
         return 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
     }
 
     login(username, password) {
         console.log('Login attempt:', { username, password });
+        
+        // Ensure users are loaded
+        this.users = this.firestoreManager.getUsers();
         
         // Check if account is locked
         if (this.isAccountLocked(username)) {
@@ -168,7 +196,8 @@ class AuthManager {
         return requiredRoles.includes(this.currentUser.role);
     }
 
-    addUser(username, password, role) {
+    async addUser(username, password, role) {
+        // Check if user exists in current cache
         if (this.users.find(u => u.username === username)) {
             return { success: false, message: 'Username already exists' };
         }
@@ -181,12 +210,21 @@ class AuthManager {
             createdAt: new Date().toISOString()
         };
 
-        this.users.push(newUser);
-        this.saveUsers();
+        try {
+            await this.firestoreManager.addUser(newUser);
+            this.users = this.firestoreManager.getUsers();
+            this.saveUsersToLocalStorage();
+        } catch (error) {
+            console.error('Error adding user to Firestore:', error);
+            // Fallback to localStorage
+            this.users.push(newUser);
+            this.saveUsersToLocalStorage();
+        }
+        
         return { success: true, user: newUser };
     }
 
-    updateUser(id, updates) {
+    async updateUser(id, updates) {
         const userIndex = this.users.findIndex(u => u.id === id);
         if (userIndex === -1) {
             return { success: false, message: 'User not found' };
@@ -197,12 +235,21 @@ class AuthManager {
             return { success: false, message: 'Username already exists' };
         }
         
-        this.users[userIndex] = { ...this.users[userIndex], ...updates };
-        this.saveUsers();
+        try {
+            await this.firestoreManager.updateUser(id, updates);
+            this.users = this.firestoreManager.getUsers();
+            this.saveUsersToLocalStorage();
+        } catch (error) {
+            console.error('Error updating user in Firestore:', error);
+            // Fallback to localStorage
+            this.users[userIndex] = { ...this.users[userIndex], ...updates };
+            this.saveUsersToLocalStorage();
+        }
+        
         return { success: true, user: this.users[userIndex] };
     }
 
-    deleteUser(id) {
+    async deleteUser(id) {
         const userIndex = this.users.findIndex(u => u.id === id);
         if (userIndex === -1) {
             return { success: false, message: 'User not found' };
@@ -217,12 +264,22 @@ class AuthManager {
             }
         }
 
-        this.users.splice(userIndex, 1);
-        this.saveUsers();
+        try {
+            await this.firestoreManager.deleteUser(id);
+            this.users = this.firestoreManager.getUsers();
+            this.saveUsersToLocalStorage();
+        } catch (error) {
+            console.error('Error deleting user from Firestore:', error);
+            // Fallback to localStorage
+            this.users.splice(userIndex, 1);
+            this.saveUsersToLocalStorage();
+        }
+        
         return { success: true };
     }
 
     getAllUsers() {
+        this.users = this.firestoreManager.getUsers();
         return this.users.map(user => ({
             id: user.id,
             username: user.username,

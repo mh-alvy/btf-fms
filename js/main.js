@@ -1,16 +1,16 @@
-// Main application initialization
+// Main application initialization - Updated for Firestore
 class App {
     constructor() {
         this.currentUser = null;
-        this.init();
+        this.init().catch(console.error);
     }
 
-    init() {
+    async init() {
         // Initialize theme
         this.initializeTheme();
         
         // Check for existing user session
-        this.checkUserSession();
+        await this.checkUserSession();
         
         // Initialize login form
         this.initializeLoginForm();
@@ -55,8 +55,13 @@ class App {
         }
     }
 
-    checkUserSession() {
-        const currentUser = window.authManager.getCurrentUser();
+    async checkUserSession() {
+        // Wait for auth manager to initialize
+        if (window.authManager && window.authManager.init) {
+            await window.authManager.init();
+        }
+        
+        const currentUser = window.authManager?.getCurrentUser();
         console.log('Checking user session:', currentUser);
         if (currentUser) {
             this.currentUser = currentUser;
@@ -76,7 +81,7 @@ class App {
         }
     }
 
-    handleLogin() {
+    async handleLogin() {
         const username = document.getElementById('username')?.value.trim();
         const password = document.getElementById('password')?.value.trim();
 
@@ -85,7 +90,7 @@ class App {
             return;
         }
 
-        const result = window.authManager.login(username, password);
+        const result = await window.authManager.login(username, password);
         
         if (result.success) {
             this.currentUser = result.user;
@@ -176,5 +181,8 @@ window.logout = function() {
 
 // Initialize application when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
-    window.app = new App();
+    // Wait for Firebase to be ready
+    setTimeout(() => {
+        window.app = new App();
+    }, 100);
 });
