@@ -112,15 +112,20 @@ class App {
 
     initializeLoginForm() {
         const loginForm = document.getElementById('loginForm');
+        const loginButton = document.getElementById('loginButton');
+        
         if (loginForm) {
-            // Remove any existing event listeners
-            loginForm.removeEventListener('submit', this.handleLogin);
-            
-            // Add new event listener with proper binding
             loginForm.addEventListener('submit', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                console.log('Login form submitted');
+                this.handleLogin();
+            });
+        }
+        
+        if (loginButton) {
+            loginButton.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
                 this.handleLogin();
             });
         }

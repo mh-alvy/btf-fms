@@ -85,7 +85,11 @@ class AuthManager {
 
     async ensureDefaultUsers() {
         // Only create default users if no users exist
-        if (!this.users || this.users.length === 0) {
+        const currentUsers = this.useFirebase ? 
+            (window.storageManager?.getUsers() || []) : 
+            (this.users || []);
+            
+        if (currentUsers.length === 0) {
             await this.createDefaultUsers();
             console.log('Created default demo users');
         } else {
