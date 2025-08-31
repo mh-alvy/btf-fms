@@ -90,6 +90,14 @@ class App {
                 themeToggle.textContent = newTheme === 'light' ? '🌓' : '☀️';
             });
         }
+        
+        if (loginButton) {
+            loginButton.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                this.handleLogin();
+            });
+        }
     }
 
     checkUserSession() {
@@ -105,6 +113,8 @@ class App {
 
     initializeLoginForm() {
         console.log('Setting up login form...');
+        const loginButton = document.getElementById('loginButton');
+        
         
         const loginButton = document.getElementById('loginButton');
         const usernameInput = document.getElementById('username');
@@ -132,14 +142,14 @@ class App {
         // Add Enter key support
         usernameInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
-                e.preventDefault();
-                passwordInput.focus();
             }
-        });
-        
+            loginForm.addEventListener('submit', (e) => {
+            }
+            )
+        }
+        )
         passwordInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
-                e.preventDefault();
                 this.handleLogin();
             }
         });
