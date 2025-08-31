@@ -5,18 +5,30 @@ class AuthManager {
         this.currentUser = null;
         this.maxLoginAttempts = 5;
         this.loginAttempts = this.loadLoginAttempts();
-        this.initializeSystem();
+        this.loadUsers();
+        this.ensureDefaultUsers();
     }
 
-    initializeSystem() {
-        // Clear any existing corrupted data
-        localStorage.removeItem('btf_users');
-        localStorage.removeItem('btf_current_user');
-        localStorage.removeItem('btf_login_attempts');
-        
-        // Create fresh default users
-        this.createDefaultUsers();
-        console.log('Authentication system initialized with demo credentials');
+    loadUsers() {
+        try {
+            const storedUsers = localStorage.getItem('btf_users');
+            if (storedUsers) {
+                this.users = JSON.parse(storedUsers);
+            }
+        } catch (e) {
+            console.error('Error loading users:', e);
+            this.users = [];
+        }
+    }
+
+    ensureDefaultUsers() {
+        // Only create default users if no users exist
+        if (this.users.length === 0) {
+            this.createDefaultUsers();
+            console.log('Created default demo users');
+        } else {
+            console.log('Existing users found, skipping default user creation');
+        }
     }
 
     createDefaultUsers() {
@@ -47,6 +59,7 @@ class AuthManager {
 
         this.users = defaultUsers;
         this.saveUsers();
+        console.log('Default users created:', this.users.map(u => ({ username: u.username, role: u.role })));
     }
 
     loadLoginAttempts() {

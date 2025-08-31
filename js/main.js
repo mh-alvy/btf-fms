@@ -57,6 +57,7 @@ class App {
 
     checkUserSession() {
         const currentUser = window.authManager.getCurrentUser();
+        console.log('Checking user session:', currentUser);
         if (currentUser) {
             this.currentUser = currentUser;
             this.showMainApp();
@@ -88,6 +89,7 @@ class App {
         
         if (result.success) {
             this.currentUser = result.user;
+            console.log('Login successful:', result.user);
             Utils.showToast(`Welcome back, ${result.user.username}!`, 'success');
             this.showMainApp();
             
