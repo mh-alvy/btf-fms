@@ -200,7 +200,6 @@ class App {
         const mainApp = document.getElementById('app');
         
         if (loginModal) {
-            console.log('Login result:', result);
             loginModal.classList.add('active');
             document.body.style.overflow = 'hidden';
             
@@ -217,10 +216,6 @@ class App {
                     `;
                 }
             }
-        } catch (error) {
-            console.error('Login error:', error);
-            Utils.showToast('An error occurred during login. Please try again.', 'error');
-        }
         }
         if (mainApp) {
             mainApp.style.display = 'none';
