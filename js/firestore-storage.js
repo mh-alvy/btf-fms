@@ -683,3 +683,5 @@ class FirestoreStorageManager {
 
 // Create global instance for immediate use
 window.FirestoreStorageManager = FirestoreStorageManager;
+
+export { FirestoreStorageManager }
