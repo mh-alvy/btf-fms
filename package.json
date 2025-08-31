@@ -16,7 +16,8 @@
   "author": "Break The Fear",
   "license": "MIT",
   "devDependencies": {
-    "serve": "^14.2.1"
+    "serve": "^14.2.1",
+    "vite": "^5.0.0"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.56.1"
