@@ -121,19 +121,25 @@ class App {
     }
 
     async handleLogin() {
+        console.log('Login attempt started');
+        
         if (!window.authManager) {
+            console.log('AuthManager not available');
             Utils.showToast('System is still initializing, please wait...', 'warning');
             return;
         }
 
         const username = document.getElementById('username')?.value.trim();
         const password = document.getElementById('password')?.value.trim();
+        
+        console.log('Login credentials:', { username, hasPassword: !!password });
 
         if (!username || !password) {
             Utils.showToast('Please enter both username and password', 'error');
             return;
         }
 
+        try {
         const result = await window.authManager.login(username, password);
         
         if (result.success) {
@@ -158,6 +164,7 @@ class App {
         const mainApp = document.getElementById('app');
         
         if (loginModal) {
+            console.log('Login result:', result);
             loginModal.classList.add('active');
             document.body.style.overflow = 'hidden';
             
@@ -174,6 +181,10 @@ class App {
                     `;
                 }
             }
+        } catch (error) {
+            console.error('Login error:', error);
+            Utils.showToast('An error occurred during login. Please try again.', 'error');
+        }
         }
         if (mainApp) {
             mainApp.style.display = 'none';

@@ -197,11 +197,19 @@ class AuthManager {
     async login(username, password) {
         console.log('Login attempt:', { username, password });
         
+        // Prevent any potential form submission issues
+        if (!username || !password) {
+            return { success: false, message: 'Username and password are required' };
+        }
+        
         // Ensure users are loaded
         if (!this.users || this.users.length === 0) {
+            console.log('Loading users...');
             this.loadUsers();
             await this.ensureDefaultUsers();
         }
+        
+        console.log('Available users for login:', this.users.map(u => ({ username: u.username, role: u.role })));
         
         // Check if account is locked
         if (this.isAccountLocked(username)) {
@@ -211,26 +219,9 @@ class AuthManager {
             };
         }
 
-        let user;
+        // Simple direct comparison for credentials
+        const user = this.users.find(u => u.username === username && u.password === password);
         
-        if (this.useFirebase) {
-            // Try Firebase Auth first, then fallback to custom user system
-            try {
-                // Ensure we have the latest users from Firestore
-                if (window.storageManager) {
-                    this.users = window.storageManager.getUsers() || [];
-                }
-                user = this.users.find(u => u.username === username && u.password === password);
-            } catch (error) {
-                console.error('Firebase login error:', error);
-                user = null;
-            }
-        } else {
-            // Simple direct comparison for demo credentials
-            user = this.users.find(u => u.username === username && u.password === password);
-        }
-        
-        console.log('Available users:', this.users);
         console.log('Found user:', user);
         
         if (user) {
