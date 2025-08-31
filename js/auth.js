@@ -21,14 +21,17 @@ class AuthManager {
             defaultUsers.forEach(userData => {
                 if (!this.users.find(u => u.username === userData.username)) {
                     this.users.push({
-                        ...userData,
                         id: this.generateId(),
-                        password: this.hashPassword(userData.password)
+                        username: userData.username,
+                        password: this.hashPassword(userData.password),
+                        role: userData.role,
+                        createdAt: new Date().toISOString()
                     });
                 }
             });
 
             this.saveUsers();
+            console.log('Default users created with demo credentials');
         }
     }
 
