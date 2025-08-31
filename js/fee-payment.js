@@ -8,6 +8,7 @@ class FeePaymentManager {
         if (this.isInitialized) return;
         this.isInitialized = true;
         this.bindEvents();
+        this.loadDropdownOptions();
         this.refresh();
     }
 
@@ -35,6 +36,45 @@ class FeePaymentManager {
             paidAmountInput.addEventListener('input', () => {
                 this.calculateDueAmount();
             });
+        }
+
+        // Initialize dropdown options when page loads
+        this.loadDropdownOptions();
+    }
+
+    loadDropdownOptions() {
+        // Load reference and received by options
+        if (window.referenceManagementManager) {
+            window.referenceManagementManager.updateReferenceDropdowns();
+            window.referenceManagementManager.updateReceivedByDropdowns();
+        }
+    }
+
+    toggleCustomReference() {
+        const referenceSelect = document.getElementById('referenceSelect');
+        const referenceCustom = document.getElementById('referenceCustom');
+        
+        if (referenceSelect.value === 'custom') {
+            referenceCustom.style.display = 'block';
+            referenceCustom.required = false; // Optional field
+        } else {
+            referenceCustom.style.display = 'none';
+            referenceCustom.required = false;
+            referenceCustom.value = '';
+        }
+    }
+
+    toggleCustomReceivedBy() {
+        const receivedBySelect = document.getElementById('receivedBySelect');
+        const receivedByCustom = document.getElementById('receivedByCustom');
+        
+        if (receivedBySelect.value === 'custom') {
+            receivedByCustom.style.display = 'block';
+            receivedByCustom.required = true;
+        } else {
+            receivedByCustom.style.display = 'none';
+            receivedByCustom.required = false;
+            receivedByCustom.value = '';
         }
     }
 
@@ -469,8 +509,20 @@ class FeePaymentManager {
         const discountAmount = this.currentActualDiscount || 0;
         const discountType = document.getElementById('discountType').value;
         const paidAmount = parseFloat(document.getElementById('paidAmount').value || 0);
-        const reference = document.getElementById('reference').value.trim();
-        const receivedBy = document.getElementById('receivedBy').value.trim();
+        
+        // Get reference value
+        const referenceSelect = document.getElementById('referenceSelect');
+        const referenceCustom = document.getElementById('referenceCustom');
+        const reference = referenceSelect.value === 'custom' ? 
+            referenceCustom.value.trim() : 
+            referenceSelect.value;
+        
+        // Get received by value
+        const receivedBySelect = document.getElementById('receivedBySelect');
+        const receivedByCustom = document.getElementById('receivedByCustom');
+        const receivedBy = receivedBySelect.value === 'custom' ? 
+            receivedByCustom.value.trim() : 
+            receivedBySelect.value;
 
         // Get discount applicable months
         const discountSelection = studentPaymentInfo.querySelector('#discountSelection');
@@ -613,12 +665,20 @@ class FeePaymentManager {
     resetPaymentForm() {
         document.getElementById('findStudentForm').reset();
         document.getElementById('feePaymentForm').reset();
+        
+        // Reset custom input fields
+        document.getElementById('referenceCustom').style.display = 'none';
+        document.getElementById('receivedByCustom').style.display = 'none';
+        document.getElementById('referenceCustom').required = false;
+        document.getElementById('receivedByCustom').required = false;
+        
         this.hideStudentInfo();
     }
 
     refresh() {
         // Reset form and hide student info
         this.resetPaymentForm();
+        this.loadDropdownOptions();
     }
 
     generateInvoice(payment) {

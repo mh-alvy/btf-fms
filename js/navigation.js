@@ -106,6 +106,9 @@ class NavigationManager {
             case 'user-management':
                 window.userManagementManager?.refresh();
                 break;
+            case 'reference-management':
+                window.referenceManagementManager?.refresh();
+                break;
         }
     }
 
