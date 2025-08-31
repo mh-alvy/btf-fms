@@ -1,245 +1,82 @@
 // Authentication System
-import { auth, db } from './firebase-config.js';
-import { 
-    signInWithEmailAndPassword, 
-    createUserWithEmailAndPassword,
-    signOut,
-    onAuthStateChanged
-} from 'firebase/auth';
-import { 
-    doc, 
-    setDoc, 
-    getDoc, 
-    collection, 
-    getDocs,
-    updateDoc,
-    deleteDoc
-} from 'firebase/firestore';
-
 class AuthManager {
     constructor() {
         this.currentUser = null;
-        this.maxLoginAttempts = 5;
-        this.loginAttempts = this.loadLoginAttempts();
-        this.useFirebase = true;
+        this.users = [];
         this.init();
     }
 
-    async init() {
-        try {
-            // Try to initialize Firebase Auth
-            await this.initializeFirebaseAuth();
-        } catch (error) {
-            console.error('Firebase Auth initialization failed, falling back to localStorage:', error);
-            this.useFirebase = false;
-        }
-        
-        this.loadUsers();
-        this.ensureDefaultUsers();
-    }
-
-    async initializeFirebaseAuth() {
-        return new Promise((resolve, reject) => {
-            const unsubscribe = onAuthStateChanged(auth, async (user) => {
-                if (user) {
-                    // User is signed in, get user data from Firestore
-                    try {
-                        const userDoc = await getDoc(doc(db, 'users', user.uid));
-                        if (userDoc.exists()) {
-                            this.currentUser = {
-                                id: user.uid,
-                                email: user.email,
-                                ...userDoc.data()
-                            };
-                        }
-                    } catch (error) {
-                        console.error('Error getting user data:', error);
-                    }
-                } else {
-                    this.currentUser = null;
-                }
-                unsubscribe();
-                resolve();
-            }, reject);
-        });
-    }
-
-    loadUsers() {
-        if (this.useFirebase) {
-            // Users are loaded from Firestore via storageManager
-            this.users = window.storageManager?.getUsers() || [];
-        } else {
-            try {
-                const storedUsers = localStorage.getItem('btf_users');
-                if (storedUsers) {
-                    this.users = JSON.parse(storedUsers);
-                } else {
-                    this.users = [];
-                }
-            } catch (e) {
-                console.error('Error loading users:', e);
-                this.users = [];
-            }
-        }
-    }
-
-    async ensureDefaultUsers() {
-        // Only create default users if no users exist
-        let currentUsers = [];
-        
-        if (this.useFirebase && window.storageManager) {
-            currentUsers = window.storageManager.getUsers() || [];
-        } else {
-            currentUsers = this.users || [];
-        }
-            
-        if (currentUsers.length === 0) {
-            this.createDefaultUsers();
-            console.log('Created default demo users');
-        } else {
-            console.log('Existing users found, skipping default user creation');
-        }
+    init() {
+        console.log('AuthManager initializing...');
+        this.createDefaultUsers();
+        console.log('AuthManager initialized with users:', this.users);
     }
 
     createDefaultUsers() {
-        // Create default users with plain text passwords for demo
-        const defaultUsers = [
+        // Create default users immediately
+        this.users = [
             {
-                username: import.meta.env.VITE_DEFAULT_ADMIN_USERNAME || 'admin',
-                password: import.meta.env.VITE_DEFAULT_ADMIN_PASSWORD || 'admin123',
+                id: 'admin_001',
+                username: 'admin',
+                password: 'admin123',
                 role: 'admin',
-                email: `${import.meta.env.VITE_DEFAULT_ADMIN_USERNAME || 'admin'}@breakthefear.com`
+                email: 'admin@breakthefear.com',
+                createdAt: new Date().toISOString()
             },
             {
-                username: import.meta.env.VITE_DEFAULT_MANAGER_USERNAME || 'manager',
-                password: import.meta.env.VITE_DEFAULT_MANAGER_PASSWORD || 'manager123',
+                id: 'manager_001',
+                username: 'manager',
+                password: 'manager123',
                 role: 'manager',
-                email: `${import.meta.env.VITE_DEFAULT_MANAGER_USERNAME || 'manager'}@breakthefear.com`
+                email: 'manager@breakthefear.com',
+                createdAt: new Date().toISOString()
             },
             {
-                username: import.meta.env.VITE_DEFAULT_DEVELOPER_USERNAME || 'developer',
-                password: import.meta.env.VITE_DEFAULT_DEVELOPER_PASSWORD || 'dev123',
+                id: 'developer_001',
+                username: 'developer',
+                password: 'dev123',
                 role: 'developer',
-                email: `${import.meta.env.VITE_DEFAULT_DEVELOPER_USERNAME || 'developer'}@breakthefear.com`
+                email: 'developer@breakthefear.com',
+                createdAt: new Date().toISOString()
             }
         ];
-
-        // Create users in localStorage for immediate availability
-        this.users = defaultUsers.map(user => ({
-            ...user,
-            id: this.generateId(),
-            createdAt: new Date().toISOString()
-        }));
-        this.saveUsers();
         
+        // Save to localStorage
+        localStorage.setItem('btf_users', JSON.stringify(this.users));
         console.log('Default users created:', this.users.map(u => ({ username: u.username, role: u.role })));
     }
 
-    loadLoginAttempts() {
-        try {
-            return JSON.parse(localStorage.getItem('btf_login_attempts') || '{}');
-        } catch (e) {
-            return {};
-        }
-    }
-
-    saveLoginAttempts() {
-        localStorage.setItem('btf_login_attempts', JSON.stringify(this.loginAttempts));
-    }
-
-    saveUsers() {
-        if (!this.useFirebase) {
-            localStorage.setItem('btf_users', JSON.stringify(this.users));
-        }
-    }
-
-    isAccountLocked(username) {
-        const attempts = this.loginAttempts[username];
-        if (!attempts) return false;
+    login(username, password) {
+        console.log('Login attempt for:', username);
         
-        const now = Date.now();
-        const lockoutTime = 15 * 60 * 1000; // 15 minutes
-        
-        if (attempts.count >= this.maxLoginAttempts) {
-            if (now - attempts.lastAttempt < lockoutTime) {
-                return true;
-            }
-            // Reset attempts after lockout period
-            delete this.loginAttempts[username];
-            this.saveLoginAttempts();
-        }
-        return false;
-    }
-
-    recordLoginAttempt(username, success) {
-        if (success) {
-            // Clear failed attempts on successful login
-            delete this.loginAttempts[username];
-        } else {
-            // Record failed attempt
-            if (!this.loginAttempts[username]) {
-                this.loginAttempts[username] = { count: 0, lastAttempt: 0 };
-            }
-            this.loginAttempts[username].count++;
-            this.loginAttempts[username].lastAttempt = Date.now();
-        }
-        this.saveLoginAttempts();
-    }
-
-    generateId() {
-        return 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-    }
-
-    async login(username, password) {
-        console.log('Login attempt:', { username, password });
-        
-        // Validate inputs
         if (!username || !password) {
-            console.log('Missing username or password');
+            console.log('Missing credentials');
             return { success: false, message: 'Username and password are required' };
         }
         
-        // Ensure users are loaded
-        if (!this.users || this.users.length === 0) {
-            console.log('Loading users...');
-            await this.loadUsers();
-            await this.ensureDefaultUsers();
-        }
-        
-        console.log('Available users for login:', this.users.map(u => ({ username: u.username, role: u.role })));
-        
-        // Find user and verify credentials
+        // Find user
         const user = this.users.find(u => u.username === username);
+        console.log('User found:', user ? user.username : 'none');
         
         if (!user) {
-            console.log('User not found:', username);
-            this.recordLoginAttempt(username, false);
+            console.log('User not found');
             return { success: false, message: 'Invalid username or password' };
         }
         
         // Check password
         if (user.password !== password) {
-            console.log('Invalid password for user:', username);
-            this.recordLoginAttempt(username, false);
+            console.log('Invalid password');
             return { success: false, message: 'Invalid username or password' };
         }
         
-        console.log('Login successful for user:', user);
-        this.recordLoginAttempt(username, true);
+        // Login successful
+        console.log('Login successful');
         this.currentUser = user;
         localStorage.setItem('btf_current_user', JSON.stringify(user));
         return { success: true, user };
     }
 
-    async logout() {
-        if (this.useFirebase) {
-            try {
-                await signOut(auth);
-            } catch (error) {
-                console.error('Firebase logout error:', error);
-            }
-        }
-        
+    logout() {
         this.currentUser = null;
         localStorage.removeItem('btf_current_user');
     }
@@ -264,133 +101,80 @@ class AuthManager {
         return requiredRoles.includes(this.currentUser.role);
     }
 
-    async addUser(username, password, role) {
+    getAllUsers() {
+        return this.users.map(user => ({
+            id: user.id,
+            username: user.username,
+            role: user.role
+        }));
+    }
+
+    generateId() {
+        return 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    }
+
+    addUser(username, password, role) {
         // Check if user exists
-        const existingUser = this.useFirebase ? 
-            window.storageManager?.getUsers().find(u => u.username === username) :
-            this.users.find(u => u.username === username);
-            
+        const existingUser = this.users.find(u => u.username === username);
         if (existingUser) {
             return { success: false, message: 'Username already exists' };
         }
 
         const newUser = {
+            id: this.generateId(),
             username,
-            password, // Store as plain text for demo
+            password,
             role,
-            email: `${username}@breakthefear.com`
+            email: `${username}@breakthefear.com`,
+            createdAt: new Date().toISOString()
         };
 
-        if (this.useFirebase) {
-            try {
-                const savedUser = await window.storageManager.addUser(newUser);
-                this.users = window.storageManager.getUsers();
-                return { success: true, user: savedUser };
-            } catch (error) {
-                console.error('Error adding user to Firestore:', error);
-                return { success: false, message: 'Failed to create user' };
-            }
-        } else {
-            newUser.id = this.generateId();
-            newUser.createdAt = new Date().toISOString();
-            this.users.push(newUser);
-            this.saveUsers();
-        }
+        this.users.push(newUser);
+        localStorage.setItem('btf_users', JSON.stringify(this.users));
         
         return { success: true, user: newUser };
     }
 
-    async updateUser(id, updates) {
-        if (this.useFirebase) {
-            try {
-                const updatedUser = await window.storageManager.updateUser(id, updates);
-                if (updatedUser) {
-                    this.users = window.storageManager.getUsers();
-                    return { success: true, user: updatedUser };
-                }
-                return { success: false, message: 'User not found' };
-            } catch (error) {
-                console.error('Error updating user in Firestore:', error);
-                return { success: false, message: 'Failed to update user' };
-            }
-        } else {
-            const userIndex = this.users.findIndex(u => u.id === id);
-            if (userIndex === -1) {
-                return { success: false, message: 'User not found' };
-            }
-
-            // Check if username already exists (for other users)
-            if (updates.username && this.users.find(u => u.username === updates.username && u.id !== id)) {
-                return { success: false, message: 'Username already exists' };
-            }
-        
-            this.users[userIndex] = { 
-                ...this.users[userIndex], 
-                ...updates,
-                updatedAt: new Date().toISOString()
-            };
-            this.saveUsers();
+    updateUser(id, updates) {
+        const userIndex = this.users.findIndex(u => u.id === id);
+        if (userIndex === -1) {
+            return { success: false, message: 'User not found' };
         }
+
+        // Check if username already exists (for other users)
+        if (updates.username && this.users.find(u => u.username === updates.username && u.id !== id)) {
+            return { success: false, message: 'Username already exists' };
+        }
+    
+        this.users[userIndex] = { 
+            ...this.users[userIndex], 
+            ...updates,
+            updatedAt: new Date().toISOString()
+        };
+        localStorage.setItem('btf_users', JSON.stringify(this.users));
         
         return { success: true, user: this.users[userIndex] };
     }
 
-    async deleteUser(id) {
-        if (this.useFirebase) {
-            try {
-                const users = window.storageManager.getUsers();
-                const user = users.find(u => u.id === id);
-                
-                if (!user) {
-                    return { success: false, message: 'User not found' };
-                }
-
-                // Prevent deleting the last developer
-                if (user.role === 'developer') {
-                    const developerCount = users.filter(u => u.role === 'developer').length;
-                    if (developerCount <= 1) {
-                        return { success: false, message: 'Cannot delete the last developer account' };
-                    }
-                }
-
-                const result = await window.storageManager.deleteUser(id);
-                if (result.success) {
-                    this.users = window.storageManager.getUsers();
-                }
-                return result;
-            } catch (error) {
-                console.error('Error deleting user from Firestore:', error);
-                return { success: false, message: 'Failed to delete user' };
-            }
-        } else {
-            const userIndex = this.users.findIndex(u => u.id === id);
-            if (userIndex === -1) {
-                return { success: false, message: 'User not found' };
-            }
-
-            // Prevent deleting the last developer
-            const user = this.users[userIndex];
-            if (user.role === 'developer') {
-                const developerCount = this.users.filter(u => u.role === 'developer').length;
-                if (developerCount <= 1) {
-                    return { success: false, message: 'Cannot delete the last developer account' };
-                }
-            }
-
-            this.users.splice(userIndex, 1);
-            this.saveUsers();
+    deleteUser(id) {
+        const userIndex = this.users.findIndex(u => u.id === id);
+        if (userIndex === -1) {
+            return { success: false, message: 'User not found' };
         }
+
+        // Prevent deleting the last developer
+        const user = this.users[userIndex];
+        if (user.role === 'developer') {
+            const developerCount = this.users.filter(u => u.role === 'developer').length;
+            if (developerCount <= 1) {
+                return { success: false, message: 'Cannot delete the last developer account' };
+            }
+        }
+
+        this.users.splice(userIndex, 1);
+        localStorage.setItem('btf_users', JSON.stringify(this.users));
         
         return { success: true };
-    }
-
-    getAllUsers() {
-        const users = this.useFirebase ? window.storageManager?.getUsers() || [] : this.users;
-        return users.map(user => ({
-            id: user.id,
-            username: user.username,
-            role: user.role
-        }));
     }
 }
 
