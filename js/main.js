@@ -34,52 +34,88 @@ class App {
         try {
             // Initialize storage manager first (required by auth manager)
             console.log('Initializing storage manager...');
-            window.storageManager = new window.StorageManager();
+            if (typeof window.StorageManager === 'function') {
+                window.storageManager = new window.StorageManager();
+            } else {
+                throw new Error('StorageManager class not available');
+            }
             await window.storageManager.init();
             
             // Initialize auth manager second
             console.log('Initializing auth manager...');
-            window.authManager = new window.AuthManager();
+            if (typeof window.AuthManager === 'function') {
+                window.authManager = new window.AuthManager();
+            } else {
+                throw new Error('AuthManager class not available');
+            }
             await window.authManager.init();
             
             console.log('Core managers initialized successfully');
         } catch (error) {
             console.error('Error initializing core managers:', error);
+            console.error('Error details:', error.message);
             Utils.showToast('Error initializing core systems', 'error');
+            throw error; // Re-throw to prevent further initialization
         }
     }
 
     async initializeAllManagers() {
         try {
+            // Ensure core managers are available before proceeding
+            if (!window.storageManager || !window.authManager) {
+                throw new Error('Core managers not initialized');
+            }
+            
             console.log('Initializing all managers...');
             
             // Initialize managers in proper order
-            window.navigationManager = new window.NavigationManager();
-            window.batchManager = new window.BatchManager();
-            window.studentManager = new window.StudentManagementManager();
-            window.feePaymentManager = new window.FeePaymentManager();
-            window.reportsManager = new window.ReportsManager();
-            window.userManagementManager = new window.UserManagementManager();
-            window.referenceManagementManager = new window.ReferenceManagementManager();
-            window.studentsDatabaseManager = new window.StudentsDatabaseManager();
-            window.invoiceManager = new window.InvoiceManager();
-            window.dashboardManager = new window.DashboardManager();
+            if (typeof window.NavigationManager === 'function') {
+                window.navigationManager = new window.NavigationManager();
+            }
+            if (typeof window.BatchManager === 'function') {
+                window.batchManager = new window.BatchManager();
+            }
+            if (typeof window.StudentManagementManager === 'function') {
+                window.studentManager = new window.StudentManagementManager();
+            }
+            if (typeof window.FeePaymentManager === 'function') {
+                window.feePaymentManager = new window.FeePaymentManager();
+            }
+            if (typeof window.ReportsManager === 'function') {
+                window.reportsManager = new window.ReportsManager();
+            }
+            if (typeof window.UserManagementManager === 'function') {
+                window.userManagementManager = new window.UserManagementManager();
+            }
+            if (typeof window.ReferenceManagementManager === 'function') {
+                window.referenceManagementManager = new window.ReferenceManagementManager();
+            }
+            if (typeof window.StudentsDatabaseManager === 'function') {
+                window.studentsDatabaseManager = new window.StudentsDatabaseManager();
+            }
+            if (typeof window.InvoiceManager === 'function') {
+                window.invoiceManager = new window.InvoiceManager();
+            }
+            if (typeof window.DashboardManager === 'function') {
+                window.dashboardManager = new window.DashboardManager();
+            }
             
             // Initialize all managers
-            await window.navigationManager.init();
-            await window.batchManager.init();
-            await window.studentManager.init();
-            await window.feePaymentManager.init();
-            await window.reportsManager.init();
-            await window.userManagementManager.init();
-            await window.referenceManagementManager.init();
-            await window.studentsDatabaseManager.init();
-            await window.invoiceManager.init();
-            await window.dashboardManager.init();
+            if (window.navigationManager) await window.navigationManager.init();
+            if (window.batchManager) await window.batchManager.init();
+            if (window.studentManager) await window.studentManager.init();
+            if (window.feePaymentManager) await window.feePaymentManager.init();
+            if (window.reportsManager) await window.reportsManager.init();
+            if (window.userManagementManager) await window.userManagementManager.init();
+            if (window.referenceManagementManager) await window.referenceManagementManager.init();
+            if (window.studentsDatabaseManager) await window.studentsDatabaseManager.init();
+            if (window.invoiceManager) await window.invoiceManager.init();
+            if (window.dashboardManager) await window.dashboardManager.init();
             
             console.log('All managers initialized successfully');
         } catch (error) {
             console.error('Error initializing managers:', error);
+            console.error('Error details:', error.message);
             Utils.showToast('Error initializing application components', 'error');
         }
     }
