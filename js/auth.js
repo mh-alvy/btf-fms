@@ -207,7 +207,3 @@ class AuthManager {
 
 // Global auth manager instance
 window.authManager = new AuthManager();
-
-// Initialize application
-console.log('Starting app initialization...');
-window.app = new App();
