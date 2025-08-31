@@ -19,5 +19,6 @@
     "serve": "^14.2.1"
   },
   "dependencies": {
+    "firebase": "^12.2.1"
   }
 }

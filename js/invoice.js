@@ -158,7 +158,7 @@ class InvoiceManager {
                         No signature required.
                     </div>
                     <div class="footer-contact">
-                        For queries: ${import.meta.env.VITE_COMPANY_EMAIL || 'breakthefear.edu@gmail.com'}
+                        For queries: breakthefear.edu@gmail.com
                     </div>
                 </div>
 

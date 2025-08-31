@@ -16,27 +16,25 @@
                 <h2>Break The Fear</h2>
                 <p>Fee Management System</p>
             </div>
-            <div id="loginForm">
+            <form id="loginForm">
                 <div class="form-group">
                     <label for="username">Username</label>
-                    <input type="text" id="username" autocomplete="username" required>
+                    <input type="text" id="username" required>
                 </div>
                 <div class="form-group">
                     <label for="password">Password</label>
-                    <input type="password" id="password" autocomplete="current-password" required>
+                    <input type="password" id="password" required>
                 </div>
-                <button type="submit" class="btn btn-primary" id="loginButton">Login</button>
-            </div>
+                <button type="submit" class="btn btn-primary">Login</button>
+            </form>
             <div class="demo-credentials">
                 <h4>Demo Credentials:</h4>
-                <p><strong>Admin:</strong> <span id="adminCredentials">admin / admin123</span></p>
-                <p><strong>Manager:</strong> <span id="managerCredentials">manager / manager123</span></p>
-                <p><strong>Developer:</strong> <span id="developerCredentials">developer / dev123</span></p>
+                <p><strong>Admin:</strong> admin / admin123</p>
+                <p><strong>Manager:</strong> manager / manager123</p>
+                <p><strong>Developer:</strong> developer / dev123</p>
             </div>
-             
         </div>
     </div>
-    
 
     <!-- Main Application -->
     <div id="app" class="app-container" style="display: none;">
@@ -672,6 +670,18 @@
         </div>
     </div>
 
+    <script src="js/auth.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/navigation.js"></script>
+    <script src="js/batch-management.js"></script>
+    <script src="js/student-management.js"></script>
+    <script src="js/fee-payment.js"></script>
+    <script src="js/reports.js"></script>
+    <script src="js/user-management.js"></script>
+    <script src="js/reference-management.js"></script>
+    <script src="js/students-database.js"></script>
+    <script src="js/invoice.js"></script>
+    <script src="js/dashboard.js"></script>
     <script type="module" src="js/main.js"></script>
 </body>
 </html>

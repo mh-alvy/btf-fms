@@ -1,71 +1,40 @@
 // Main application initialization
-import './utils.js';
-import './auth.js';
-import './navigation.js';
-import './storage.js';
-import './batch-management.js';
-import './student-management.js';
-import './fee-payment.js';
-import './reports.js';
-import './user-management.js';
-import './reference-management.js';
-import './students-database.js';
-import './invoice.js';
-import './dashboard.js';
+import './firebase-config.js';
+import './firestore-storage.js';
 
 class App {
     constructor() {
         this.currentUser = null;
-        this.authReady = false;
-        this.init();
+        this.initializationPromise = this.init().catch(console.error);
     }
 
-    init() {
-        console.log('App initialization started');
+    async init() {
+        // Wait for storage manager to initialize
+        if (window.storageManager && window.storageManager.init) {
+            await window.storageManager.init();
+        }
         
-        // Initialize theme first
+        // Wait for auth manager to initialize
+        if (window.authManager && window.authManager.init) {
+            await window.authManager.init();
+        }
+        
+        // Initialize theme
         this.initializeTheme();
         
-        // Wait for DOM to be ready
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', () => {
-                this.initializeApp();
-            });
-        } else {
-            this.initializeApp();
-        }
-    }
-
-    initializeApp() {
-        console.log('DOM ready, initializing app...');
+        // Check for existing user session
+        this.checkUserSession();
         
-        // Wait for auth manager to be ready
-        this.waitForAuthManager(() => {
-            this.authReady = true;
-            console.log('Auth manager ready, setting up login...');
-            
-            // Initialize login form
-            this.initializeLoginForm();
-            
-            // Check for existing user session
-            this.checkUserSession();
-            
-            // Initialize other components
-            this.initializeThemeToggle();
-            
-            console.log('Application initialized successfully');
-        });
-    }
-
-    waitForAuthManager(callback) {
-        if (window.authManager) {
-            callback();
-        } else {
-            console.log('Waiting for auth manager...');
-            setTimeout(() => {
-                this.waitForAuthManager(callback);
-            }, 50);
-        }
+        // Initialize login form
+        this.initializeLoginForm();
+        
+        // Initialize theme toggle
+        this.initializeThemeToggle();
+        
+        // Initialize logout
+        this.initializeLogout();
+        
+        console.log('Application initialized successfully');
     }
 
     initializeTheme() {
@@ -90,12 +59,13 @@ class App {
                 themeToggle.textContent = newTheme === 'light' ? '🌓' : '☀️';
             });
         }
-        
-        if (loginButton) {
-            loginButton.addEventListener('click', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                this.handleLogin();
+    }
+
+    initializeLogout() {
+        const logoutBtn = document.getElementById('logoutBtn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', () => {
+                this.logout();
             });
         }
     }
@@ -112,127 +82,60 @@ class App {
     }
 
     initializeLoginForm() {
-        console.log('Setting up login form...');
-        const loginButton = document.getElementById('loginButton');
-        
-        
-        const loginButton = document.getElementById('loginButton');
-        const usernameInput = document.getElementById('username');
-        const passwordInput = document.getElementById('password');
-        
-        if (!loginButton || !usernameInput || !passwordInput) {
-            console.error('Login elements not found!');
-            return;
-        }
-        
-        console.log('Login elements found, adding event listeners...');
-        
-        // Remove any existing event listeners by cloning the button
-        const newLoginButton = loginButton.cloneNode(true);
-        loginButton.parentNode.replaceChild(newLoginButton, loginButton);
-        
-        // Add click event listener to the new button
-        newLoginButton.addEventListener('click', (e) => {
-            console.log('Login button clicked!');
-            e.preventDefault();
-            e.stopPropagation();
-            this.handleLogin();
-        });
-        
-        // Add Enter key support
-        usernameInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-            }
+        const loginForm = document.getElementById('loginForm');
+        if (loginForm) {
             loginForm.addEventListener('submit', (e) => {
-            }
-            )
-        }
-        )
-        passwordInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
+                e.preventDefault();
                 this.handleLogin();
-            }
-        });
-        
-        console.log('Login form initialized successfully');
+            });
+        }
     }
 
-    handleLogin() {
-        console.log('handleLogin called');
-        
-        if (!this.authReady || !window.authManager) {
-            console.log('Auth system not ready');
-            alert('Authentication system is still loading. Please wait a moment and try again.');
-            return;
-        }
-        
-        const loginButton = document.getElementById('loginButton');
-        const usernameInput = document.getElementById('username');
-        const passwordInput = document.getElementById('password');
-        
-        if (!usernameInput || !passwordInput) {
-            console.error('Login inputs not found during login attempt');
-            alert('Login form not properly initialized');
-            return;
-        }
-        
-        const username = usernameInput.value.trim();
-        const password = passwordInput.value.trim();
-        
-        console.log('Login attempt with:', { username, hasPassword: !!password });
-        
+    async handleLogin() {
+        const username = document.getElementById('username')?.value.trim();
+        const password = document.getElementById('password')?.value.trim();
+
         if (!username || !password) {
-            alert('Please enter both username and password');
+            Utils.showToast('Please enter both username and password', 'error');
             return;
         }
+
+        const result = await window.authManager.login(username, password);
         
-        // Disable button during login
-        if (loginButton) {
-            loginButton.disabled = true;
-            loginButton.textContent = 'Logging in...';
-        }
-        
-        try {
-            const result = window.authManager.login(username, password);
-            console.log('Login result:', result);
+        if (result.success) {
+            this.currentUser = result.user;
+            console.log('Login successful:', result.user);
+            Utils.showToast(`Welcome back, ${result.user.username}!`, 'success');
+            this.showMainApp();
             
-            if (result.success) {
-                this.currentUser = result.user;
-                console.log('Login successful for:', result.user.username);
-                
-                // Clear form
-                usernameInput.value = '';
-                passwordInput.value = '';
-                
-                // Show success message
-                alert(`Welcome back, ${result.user.username}!`);
-                
-                // Show main app
-                this.showMainApp();
-            } else {
-                console.log('Login failed:', result.message);
-                alert(result.message || 'Invalid username or password');
-            }
-        } catch (error) {
-            console.error('Login error:', error);
-            alert('Login failed. Please try again.');
-        } finally {
-            // Re-enable login button
-            if (loginButton) {
-                loginButton.disabled = false;
-                loginButton.textContent = 'Login';
-            }
+            // Clear form
+            document.getElementById('loginForm').reset();
+        } else {
+            Utils.showToast(result.message || 'Invalid username or password', 'error');
         }
     }
 
     showLoginModal() {
-        console.log('Showing login modal');
         const loginModal = document.getElementById('loginModal');
         const mainApp = document.getElementById('app');
         
         if (loginModal) {
             loginModal.classList.add('active');
             document.body.style.overflow = 'hidden';
+            
+            // Show first-time password if it exists
+            const firstTimePassword = localStorage.getItem('btf_first_time_password');
+            if (firstTimePassword) {
+                const demoCredentials = loginModal.querySelector('.demo-credentials');
+                if (demoCredentials) {
+                    demoCredentials.innerHTML = `
+                        <h4>🔐 First Time Setup:</h4>
+                        <p><strong>Username:</strong> admin</p>
+                        <p><strong>Password:</strong> ${firstTimePassword}</p>
+                        <p style="color: var(--danger-color); font-weight: bold;">⚠️ Please change this password immediately after login!</p>
+                    `;
+                }
+            }
         }
         if (mainApp) {
             mainApp.style.display = 'none';
@@ -240,7 +143,6 @@ class App {
     }
 
     showMainApp() {
-        console.log('Showing main app');
         const loginModal = document.getElementById('loginModal');
         const mainApp = document.getElementById('app');
         
@@ -251,26 +153,43 @@ class App {
         if (mainApp) {
             mainApp.style.display = 'flex';
         }
+        
+        // Clear first-time password after successful login
+        localStorage.removeItem('btf_first_time_password');
 
-        // Setup role-based navigation
-        if (window.navigationManager) {
-            window.navigationManager.setupRoleBasedNavigation();
-            window.navigationManager.navigateTo('dashboard');
+        // Initialize navigation manager
+        if (!window.navigationManager.isInitialized) {
+            window.navigationManager.hideLoginModal();
         }
 
         // Refresh dashboard
         if (window.dashboardManager) {
             window.dashboardManager.refresh();
         }
-        console.log('Main app displayed successfully');
+    }
+
+    logout() {
+        Utils.confirm('Are you sure you want to logout?', () => {
+            window.authManager.logout();
+            this.currentUser = null;
+            this.showLoginModal();
+            
+            // Reset navigation to dashboard
+            window.navigationManager.navigateTo('dashboard');
+            
+            Utils.showToast('Logged out successfully', 'success');
+        });
     }
 }
 
-// Initialize application after all modules are loaded
-console.log('Starting app initialization...');
-
-// Wait for all modules to load before initializing the app
-setTimeout(() => {
-    console.log('All modules loaded, initializing app...');
+// Initialize application when DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
     window.app = new App();
-}, 100);
+    
+    // Global logout function
+    window.logout = function() {
+        if (window.app) {
+            window.app.logout();
+        }
+    };
+});
