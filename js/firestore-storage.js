@@ -681,5 +681,5 @@ class FirestoreStorageManager {
     }
 }
 
-// Export for use in other modules
-export { FirestoreStorageManager };
+// Create global instance for immediate use
+window.FirestoreStorageManager = FirestoreStorageManager;
