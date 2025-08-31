@@ -99,38 +99,41 @@ class App {
     initializeLoginForm() {
         console.log('Initializing login form...');
         
-        const loginForm = document.getElementById('loginForm');
         const loginButton = document.getElementById('loginButton');
         
-        if (!loginForm || !loginButton) {
-            console.error('Login form or button not found');
+        if (!loginButton) {
+            console.error('Login button not found');
             return;
         }
 
-        // Remove any existing event listeners by cloning elements
-        const newLoginForm = loginForm.cloneNode(true);
-        const newLoginButton = newLoginForm.querySelector('#loginButton');
-        loginForm.parentNode.replaceChild(newLoginForm, loginForm);
+        // Remove any existing event listeners by cloning the button
+        const newLoginButton = loginButton.cloneNode(true);
+        loginButton.parentNode.replaceChild(newLoginButton, loginButton);
 
-        // Add single event listener to prevent form submission
-        newLoginForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            console.log('Form submit prevented, handling login...');
-            this.handleLogin();
-            return false;
-        });
-
-        // Add click listener to button as backup
+        // Add single click listener
         newLoginButton.addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
-            console.log('Button clicked, handling login...');
+            console.log('Login button clicked, handling login...');
             this.handleLogin();
             return false;
         });
         
-        console.log('Login form event listeners added');
+        // Also handle Enter key press on password field
+        const passwordInput = document.getElementById('password');
+        if (passwordInput) {
+            passwordInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('Enter key pressed, handling login...');
+                    this.handleLogin();
+                    return false;
+                }
+            });
+        }
+        
+        console.log('Login button event listeners added');
     }
 
     handleLogin() {
