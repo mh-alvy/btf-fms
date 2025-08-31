@@ -81,7 +81,7 @@ class FeePaymentManager {
     findStudent() {
         const searchValue = document.getElementById('searchStudentId').value.trim();
         if (!searchValue) {
-            Utils.showToast('Please enter a student ID or name', 'error');
+            window.utils.showToast('Please enter a student ID or name', 'error');
             return;
         }
 
@@ -97,7 +97,7 @@ class FeePaymentManager {
         }
 
         if (!student) {
-            Utils.showToast('Student not found', 'error');
+            window.utils.showToast('Student not found', 'error');
             this.hideStudentInfo();
             return;
         }
@@ -288,11 +288,12 @@ class FeePaymentManager {
                     <label for="month_${month.id}">
                         <span>${month.name} (${month.courseName}) ${isFullyPaid ? '✓ Fully Paid' : (totalPaid > 0 ? '⚠ Partial' : '')}</span>
                         <span class="course-fee">
-                            ${isFullyPaid ? 
+                            ${window.utils.formatCurrency(month.payment)}
                                 Utils.formatCurrency(month.payment) : 
                                 (totalCovered > 0 ? 
                                     `${Utils.formatCurrency(remainingDue)} due (${Utils.formatCurrency(totalPaid)} paid${totalDiscount > 0 ? `, ${Utils.formatCurrency(totalDiscount)} discount` : ''})` : 
-                                    Utils.formatCurrency(month.payment)
+                                    `${window.utils.formatCurrency(remainingDue)} due (${window.utils.formatCurrency(totalPaid)} paid${totalDiscount > 0 ? `, ${window.utils.formatCurrency(totalDiscount)} discount` : ''})` : 
+                                    window.utils.formatCurrency(month.payment)
                                 )
                             }
                         </span>
@@ -419,7 +420,7 @@ class FeePaymentManager {
                     let percentage = Math.min(discountInputValue, 100);
                     if (discountInputValue > 100) {
                         discountAmountInput.value = 100;
-                        Utils.showToast('Percentage discount cannot exceed 100%', 'warning');
+                        window.utils.showToast('Percentage discount cannot exceed 100%', 'warning');
                     }
                     
                     actualDiscountAmount = (discountableAmount * percentage) / 100;
@@ -428,7 +429,7 @@ class FeePaymentManager {
                     actualDiscountAmount = Math.min(discountInputValue, discountableAmount);
                     
                     if (discountInputValue > discountableAmount) {
-                        Utils.showToast(`Discount limited to ${Utils.formatCurrency(discountableAmount)} (maximum applicable amount)`, 'warning');
+                        window.utils.showToast(`Discount limited to ${window.utils.formatCurrency(discountableAmount)} (maximum applicable amount)`, 'warning');
                     }
                 }
             }
@@ -495,7 +496,7 @@ class FeePaymentManager {
 
     async processPayment() {
         if (!this.currentStudent) {
-            Utils.showToast('Please find a student first', 'error');
+            window.utils.showToast('Please find a student first', 'error');
             return;
         }
 
@@ -540,34 +541,34 @@ class FeePaymentManager {
             }));
 
         if (selectedCourses.length === 0 || selectedMonths.length === 0) {
-            Utils.showToast('Please select courses and months', 'error');
+            window.utils.showToast('Please select courses and months', 'error');
             return;
         }
 
         if (discountedAmount <= 0) {
-            Utils.showToast('Total amount must be greater than 0', 'error');
+            window.utils.showToast('Total amount must be greater than 0', 'error');
             return;
         }
 
         if (paidAmount <= 0) {
-            Utils.showToast('Paid amount must be greater than 0', 'error');
+            window.utils.showToast('Paid amount must be greater than 0', 'error');
             return;
         }
 
         // Check if discount is applied and reference is required
         if (discountAmount > 0 && !reference) {
-            Utils.showToast('Reference is required when discount is applied', 'error');
+            window.utils.showToast('Reference is required when discount is applied', 'error');
             return;
         }
 
         // Check if discount payment must be full
         if (discountAmount > 0 && paidAmount < discountedAmount) {
-            Utils.showToast('Discounted payments cannot be partial. Please pay the full discounted amount.', 'error');
+            window.utils.showToast('Discounted payments cannot be partial. Please pay the full discounted amount.', 'error');
             return;
         }
 
         if (!receivedBy) {
-            Utils.showToast('Please enter who received the payment', 'error');
+            window.utils.showToast('Please enter who received the payment', 'error');
             return;
         }
 
@@ -597,7 +598,7 @@ class FeePaymentManager {
         const savedPayment = await window.storageManager.addPayment(payment);
         
         if (savedPayment) {
-            Utils.showToast('Payment processed successfully!', 'success');
+            window.utils.showToast('Payment processed successfully!', 'success');
             
             // Generate and show invoice
             window.invoiceManager.generateInvoice(savedPayment);

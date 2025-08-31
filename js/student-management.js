@@ -52,7 +52,7 @@ class StudentManagementManager {
         const address = document.getElementById('institutionAddress').value.trim();
 
         if (!name || !address) {
-            Utils.showToast('Please fill in all fields', 'error');
+            window.utils.showToast('Please fill in all fields', 'error');
             return;
         }
 
@@ -62,18 +62,18 @@ class StudentManagementManager {
         );
 
         if (existingInstitution) {
-            Utils.showToast('Institution with this name already exists', 'error');
+            window.utils.showToast('Institution with this name already exists', 'error');
             return;
         }
 
         const institutionData = {
-            name: Utils.sanitizeInput(name),
-            address: Utils.sanitizeInput(address)
+            name: window.utils.sanitizeInput(name),
+            address: window.utils.sanitizeInput(address)
         };
 
         const institution = await window.storageManager.addInstitution(institutionData);
         if (institution) {
-            Utils.showToast('Institution created successfully', 'success');
+            window.utils.showToast('Institution created successfully', 'success');
             document.getElementById('createInstitutionForm').reset();
             this.loadInstitutions();
             this.updateInstitutionDropdown();
@@ -90,12 +90,12 @@ class StudentManagementManager {
         const batchId = document.getElementById('studentBatch').value;
 
         if (!name || !institutionId || !gender || !phone || !guardianName || !guardianPhone || !batchId) {
-            Utils.showToast('Please fill in all fields', 'error');
+            window.utils.showToast('Please fill in all fields', 'error');
             return;
         }
 
-        if (!Utils.validatePhone(phone) || !Utils.validatePhone(guardianPhone)) {
-            Utils.showToast('Please enter valid phone numbers', 'error');
+        if (!window.utils.validatePhone(phone) || !window.utils.validatePhone(guardianPhone)) {
+            window.utils.showToast('Please enter valid phone numbers', 'error');
             return;
         }
 
@@ -103,23 +103,23 @@ class StudentManagementManager {
         const enrolledCourses = this.getEnrolledCourses();
         
         if (enrolledCourses.length === 0) {
-            Utils.showToast('Please select at least one course', 'error');
+            window.utils.showToast('Please select at least one course', 'error');
             return;
         }
         const studentData = {
-            name: Utils.sanitizeInput(name),
+            name: window.utils.sanitizeInput(name),
             institutionId,
             gender,
-            phone: Utils.sanitizeInput(phone),
-            guardianName: Utils.sanitizeInput(guardianName),
-            guardianPhone: Utils.sanitizeInput(guardianPhone),
+            phone: window.utils.sanitizeInput(phone),
+            guardianName: window.utils.sanitizeInput(guardianName),
+            guardianPhone: window.utils.sanitizeInput(guardianPhone),
             batchId,
             enrolledCourses
         };
 
         const student = await window.storageManager.addStudent(studentData);
         if (student) {
-            Utils.showToast(`Student added successfully with ID: ${student.studentId}`, 'success');
+            window.utils.showToast(`Student added successfully with ID: ${student.studentId}`, 'success');
             document.getElementById('addStudentForm').reset();
             this.clearCourseSelection();
         }
@@ -498,32 +498,32 @@ class StudentManagementManager {
             const enrolledCourses = this.getEditEnrolledCourses();
 
             if (!name || !institutionId || !gender || !phone || !guardianName || !guardianPhone || !batchId) {
-                Utils.showToast('Please fill in all fields', 'error');
+                window.utils.showToast('Please fill in all fields', 'error');
                 return;
             }
 
-            if (!Utils.validatePhone(phone) || !Utils.validatePhone(guardianPhone)) {
-                Utils.showToast('Please enter valid phone numbers', 'error');
+            if (!window.utils.validatePhone(phone) || !window.utils.validatePhone(guardianPhone)) {
+                window.utils.showToast('Please enter valid phone numbers', 'error');
                 return;
             }
 
             if (enrolledCourses.length === 0) {
-                Utils.showToast('Please select at least one course', 'error');
+                window.utils.showToast('Please select at least one course', 'error');
                 return;
             }
             const result = window.storageManager.updateStudent(id, {
-                name: Utils.sanitizeInput(name),
+                name: window.utils.sanitizeInput(name),
                 institutionId,
                 gender,
-                phone: Utils.sanitizeInput(phone),
-                guardianName: Utils.sanitizeInput(guardianName),
-                guardianPhone: Utils.sanitizeInput(guardianPhone),
+                phone: window.utils.sanitizeInput(phone),
+                guardianName: window.utils.sanitizeInput(guardianName),
+                guardianPhone: window.utils.sanitizeInput(guardianPhone),
                 batchId,
                 enrolledCourses
             });
 
             if (result) {
-                Utils.showToast('Student updated successfully', 'success');
+                window.utils.showToast('Student updated successfully', 'success');
                 window.navigationManager.closeModal(document.getElementById('editModal'));
             }
         });
@@ -534,11 +534,12 @@ class StudentManagementManager {
         if (!student) return;
 
         Utils.confirm(`Are you sure you want to delete "${student.name}"?`, () => {
+        window.utils.confirm(`Are you sure you want to delete "${student.name}"?`, () => {
             const result = window.storageManager.deleteStudent(id);
             if (result.success) {
-                Utils.showToast('Student deleted successfully', 'success');
+                window.utils.showToast('Student deleted successfully', 'success');
             } else {
-                Utils.showToast(result.message, 'error');
+                window.utils.showToast(result.message, 'error');
             }
         });
     }
