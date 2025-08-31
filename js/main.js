@@ -126,23 +126,27 @@ class App {
     initializeLoginForm() {
         console.log('Initializing login form...');
         
+        const loginForm = document.getElementById('loginForm');
         const loginButton = document.getElementById('loginButton');
         
-        if (loginButton) {
-            // Remove any existing event listeners
-            loginButton.replaceWith(loginButton.cloneNode(true));
-            const newLoginButton = document.getElementById('loginButton');
-            
-            newLoginButton.addEventListener('click', async (e) => {
+        if (loginForm && loginButton) {
+            // Handle form submission
+            loginForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
-                e.stopPropagation();
+                console.log('Login form submitted');
+                await this.handleLogin();
+            });
+            
+            // Handle button click
+            loginButton.addEventListener('click', async (e) => {
+                e.preventDefault();
                 console.log('Login button clicked');
                 await this.handleLogin();
             });
             
-            console.log('Login button event listener added');
+            console.log('Login form and button event listeners added');
         } else {
-            console.error('Login button not found');
+            console.error('Login form or button not found');
         }
     }
 

@@ -85,9 +85,13 @@ class AuthManager {
 
     async ensureDefaultUsers() {
         // Only create default users if no users exist
-        const currentUsers = this.useFirebase ? 
-            (window.storageManager?.getUsers() || []) : 
-            (this.users || []);
+        let currentUsers = [];
+        
+        if (this.useFirebase && window.storageManager) {
+            currentUsers = window.storageManager.getUsers() || [];
+        } else {
+            currentUsers = this.users || [];
+        }
             
         if (currentUsers.length === 0) {
             await this.createDefaultUsers();
@@ -216,12 +220,13 @@ class AuthManager {
         console.log('Available users for login:', this.users.map(u => ({ username: u.username, role: u.role })));
         
         // Check if account is locked
-        if (this.isAccountLocked(username)) {
-            return { 
-                success: false, 
-                message: 'Account temporarily locked due to too many failed attempts. Please try again in 15 minutes.' 
-            };
-        }
+        // Temporarily disable account locking for debugging
+        // if (this.isAccountLocked(username)) {
+        //     return { 
+        //         success: false, 
+        //         message: 'Account temporarily locked due to too many failed attempts. Please try again in 15 minutes.' 
+        //     };
+        // }
 
         // Find user and verify credentials
         const user = this.users.find(u => u.username === username);
