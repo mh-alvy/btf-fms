@@ -271,6 +271,31 @@ class App {
         console.log('Main app displayed successfully');
     }
 
+    updateDemoCredentials() {
+        // Update demo credentials display with environment variables
+        const adminCreds = document.getElementById('adminCredentials');
+        const managerCreds = document.getElementById('managerCredentials');
+        const developerCreds = document.getElementById('developerCredentials');
+        
+        if (adminCreds) {
+            const adminUser = import.meta.env.VITE_DEFAULT_ADMIN_USERNAME || 'admin';
+            const adminPass = import.meta.env.VITE_DEFAULT_ADMIN_PASSWORD || 'admin123';
+            adminCreds.textContent = `${adminUser} / ${adminPass}`;
+        }
+        
+        if (managerCreds) {
+            const managerUser = import.meta.env.VITE_DEFAULT_MANAGER_USERNAME || 'manager';
+            const managerPass = import.meta.env.VITE_DEFAULT_MANAGER_PASSWORD || 'manager123';
+            managerCreds.textContent = `${managerUser} / ${managerPass}`;
+        }
+        
+        if (developerCreds) {
+            const devUser = import.meta.env.VITE_DEFAULT_DEVELOPER_USERNAME || 'developer';
+            const devPass = import.meta.env.VITE_DEFAULT_DEVELOPER_PASSWORD || 'dev123';
+            developerCreds.textContent = `${devUser} / ${devPass}`;
+        }
+    }
+
     logout() {
         Utils.confirm('Are you sure you want to logout?', () => {
             window.authManager.logout();
