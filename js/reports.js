@@ -150,18 +150,18 @@ class ReportsManager {
     }
 
     filterByWeek(payments, targetDate) {
-        const weekRange = window.utils.getWeekRange(targetDate);
+        const weekRange = Utils.getWeekRange(targetDate);
         return payments.filter(payment => {
             const paymentDate = new Date(payment.createdAt);
-            return window.utils.isDateInRange(paymentDate, weekRange.start, weekRange.end);
+            return Utils.isDateInRange(paymentDate, weekRange.start, weekRange.end);
         });
     }
 
     filterByMonth(payments, targetDate) {
-        const monthRange = window.utils.getMonthRange(targetDate);
+        const monthRange = Utils.getMonthRange(targetDate);
         return payments.filter(payment => {
             const paymentDate = new Date(payment.createdAt);
-            return window.utils.isDateInRange(paymentDate, monthRange.start, monthRange.end);
+            return Utils.isDateInRange(paymentDate, monthRange.start, monthRange.end);
         });
     }
 
@@ -326,16 +326,16 @@ class ReportsManager {
     getReportTitle(reportType, reportDate, reportCourse) {
         switch (reportType) {
             case 'date':
-                return `Payments Report - ${reportDate ? window.utils.formatDate(reportDate) : 'All Dates'}`;
+                return `Payments Report - ${reportDate ? Utils.formatDate(reportDate) : 'All Dates'}`;
             case 'week':
                 if (reportDate) {
-                    const weekRange = window.utils.getWeekRange(new Date(reportDate));
-                    return `Weekly Report - ${window.utils.formatDate(weekRange.start)} to ${window.utils.formatDate(weekRange.end)}`;
+                    const weekRange = Utils.getWeekRange(new Date(reportDate));
+                    return `Weekly Report - ${Utils.formatDate(weekRange.start)} to ${Utils.formatDate(weekRange.end)}`;
                 }
                 return 'Weekly Report - All Weeks';
             case 'month':
                 if (reportDate) {
-                    const monthRange = window.utils.getMonthRange(new Date(reportDate));
+                    const monthRange = Utils.getMonthRange(new Date(reportDate));
                     return `Monthly Report - ${monthRange.start.toLocaleString('default', { month: 'long', year: 'numeric' })}`;
                 }
                 return 'Monthly Report - All Months';
@@ -487,7 +487,7 @@ class ReportsManager {
                 </div>
                 <div class="detail-item">
                     <div class="detail-label">Date</div>
-                    <div class="detail-value">${window.utils.formatDateTime(payment.createdAt)}</div>
+                    <div class="detail-value">${Utils.formatDateTime(payment.createdAt)}</div>
                 </div>
             </div>
         `;
@@ -516,17 +516,17 @@ class ReportsManager {
                 'Due Amount': payment.dueAmount,
                 'Reference': payment.reference || '',
                 'Received By': payment.receivedBy,
-                'Date': window.utils.formatDateTime(payment.createdAt)
+                'Date': Utils.formatDateTime(payment.createdAt)
             };
         });
 
         const filename = `payments_report_${new Date().toISOString().split('T')[0]}.csv`;
-        window.utils.exportToCSV(exportData, filename);
+        Utils.exportToCSV(exportData, filename);
     }
 
     printReport() {
         const reportResults = document.getElementById('reportResults');
-        window.utils.printElement(reportResults);
+        Utils.printElement(reportResults);
     }
 
     refresh() {
@@ -725,7 +725,7 @@ class ReportsManager {
                 </div>
                 <div class="detail-item">
                     <div class="detail-label">Date</div>
-                    <div class="detail-value">${window.utils.formatDateTime(payment.createdAt)}</div>
+                    <div class="detail-value">${Utils.formatDateTime(payment.createdAt)}</div>
                 </div>
             </div>
         `;
@@ -760,17 +760,17 @@ class ReportsManager {
                 'Due Amount': payment.dueAmount,
                 'Reference': payment.reference || '',
                 'Received By': payment.receivedBy,
-                'Date': window.utils.formatDateTime(payment.createdAt)
+                'Date': Utils.formatDateTime(payment.createdAt)
             };
         });
 
         const filename = `discount_report_${new Date().toISOString().split('T')[0]}.csv`;
-        window.utils.exportToCSV(exportData, filename);
+        Utils.exportToCSV(exportData, filename);
     }
 
     printDiscountReport() {
         const reportResults = document.getElementById('discountReportResults');
-        window.utils.printElement(reportResults);
+        Utils.printElement(reportResults);
     }
 }
 

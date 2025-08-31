@@ -66,18 +66,18 @@ class UserManagementManager {
         const role = document.getElementById('newUserRole').value;
 
         if (!username || !password || !role) {
-            window.utils.showToast('Please fill all fields', 'error');
+            Utils.showToast('Please fill all fields', 'error');
             return;
         }
 
         const result = await window.authManager.addUser(username, password, role);
         
         if (result.success) {
-            window.utils.showToast('User created successfully!', 'success');
+            Utils.showToast('User created successfully!', 'success');
             document.getElementById('addUserForm').reset();
             this.refresh();
         } else {
-            window.utils.showToast(result.message, 'error');
+            Utils.showToast(result.message, 'error');
         }
     }
 
@@ -86,7 +86,7 @@ class UserManagementManager {
         const user = users.find(u => u.id === userId);
         
         if (!user) {
-            window.utils.showToast('User not found', 'error');
+            Utils.showToast('User not found', 'error');
             return;
         }
 
@@ -129,7 +129,7 @@ class UserManagementManager {
         const role = document.getElementById('editRole').value;
 
         if (!username || !role) {
-            window.utils.showToast('Please fill all required fields', 'error');
+            Utils.showToast('Please fill all required fields', 'error');
             return;
         }
 
@@ -141,11 +141,11 @@ class UserManagementManager {
         const result = await window.authManager.updateUser(userId, updates);
         
         if (result.success) {
-            window.utils.showToast('User updated successfully!', 'success');
+            Utils.showToast('User updated successfully!', 'success');
             window.navigationManager.closeModal(document.getElementById('editModal'));
             this.refresh();
         } else {
-            window.utils.showToast(result.message, 'error');
+            Utils.showToast(result.message, 'error');
         }
     }
 
@@ -154,18 +154,18 @@ class UserManagementManager {
         const user = users.find(u => u.id === userId);
         
         if (!user) {
-            window.utils.showToast('User not found', 'error');
+            Utils.showToast('User not found', 'error');
             return;
         }
 
-        window.utils.confirm(`Are you sure you want to delete user "${user.username}"?`, async () => {
+        Utils.confirm(`Are you sure you want to delete user "${user.username}"?`, async () => {
             const result = await window.authManager.deleteUser(userId);
             
             if (result.success) {
-                window.utils.showToast('User deleted successfully!', 'success');
+                Utils.showToast('User deleted successfully!', 'success');
                 this.refresh();
             } else {
-                window.utils.showToast(result.message, 'error');
+                Utils.showToast(result.message, 'error');
             }
         });
     }

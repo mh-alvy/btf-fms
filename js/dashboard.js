@@ -27,11 +27,11 @@ class DashboardManager {
         // This month's revenue
         const thisMonth = this.getThisMonthPayments(payments);
         const monthlyRevenue = thisMonth.reduce((sum, payment) => sum + payment.paidAmount, 0);
-        document.getElementById('monthlyRevenue').textContent = window.utils.formatCurrency(monthlyRevenue);
+        document.getElementById('monthlyRevenue').textContent = Utils.formatCurrency(monthlyRevenue);
 
         // Pending fees
         const pendingFees = this.calculatePendingFees(students, payments);
-        document.getElementById('pendingFees').textContent = window.utils.formatCurrency(pendingFees);
+        document.getElementById('pendingFees').textContent = Utils.formatCurrency(pendingFees);
     }
 
     getThisMonthPayments(payments) {
@@ -119,7 +119,7 @@ class DashboardManager {
                 </div>
                 <div class="activity-content">
                     <div class="activity-text">${activity.description}</div>
-                    <div class="activity-time">${window.utils.getRelativeTime(activity.timestamp)} by ${activity.user}</div>
+                    <div class="activity-time">${Utils.getRelativeTime(activity.timestamp)} by ${activity.user}</div>
                 </div>
             </div>
         `).join('');

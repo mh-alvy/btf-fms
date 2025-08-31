@@ -14,221 +14,121 @@ class StudentManagementManager {
 
     bindEvents() {
         // Create Institution Form
-        const createInstitutionForm = document.getElementById('createInstitutionForm');
-        if (createInstitutionForm) {
-            createInstitutionForm.addEventListener('submit', (e) => {
+        const institutionForm = document.getElementById('createInstitutionForm');
+        if (institutionForm) {
+            institutionForm.addEventListener('submit', (e) => {
                 e.preventDefault();
                 this.createInstitution();
             });
         }
 
         // Add Student Form
-        const addStudentForm = document.getElementById('addStudentForm');
-        if (addStudentForm) {
-            addStudentForm.addEventListener('submit', (e) => {
+        const studentForm = document.getElementById('addStudentForm');
+        if (studentForm) {
+            studentForm.addEventListener('submit', (e) => {
                 e.preventDefault();
                 this.addStudent();
             });
         }
 
-        // Student batch change
-        const studentBatchSelect = document.getElementById('studentBatch');
-        if (studentBatchSelect) {
-            studentBatchSelect.addEventListener('change', () => {
-                this.updateCourseSelection();
+        // Search and filter events
+        const studentSearch = document.getElementById('studentSearch');
+        if (studentSearch) {
+            studentSearch.addEventListener('input', Utils.debounce(() => {
+                this.filterStudents();
+            }, 300));
+        }
+
+        const paymentFilter = document.getElementById('paymentFilter');
+        if (paymentFilter) {
+            paymentFilter.addEventListener('change', () => {
+                this.filterStudents();
             });
         }
     }
 
     async createInstitution() {
-        const institutionName = window.utils.sanitizeInput(document.getElementById('institutionName').value);
-        const institutionAddress = window.utils.sanitizeInput(document.getElementById('institutionAddress').value);
+        const name = document.getElementById('institutionName').value.trim();
+        const address = document.getElementById('institutionAddress').value.trim();
 
-        if (!institutionName || !institutionAddress) {
-            window.utils.showToast('Please fill all fields', 'error');
+        if (!name || !address) {
+            Utils.showToast('Please fill in all fields', 'error');
             return;
         }
 
         // Check if institution already exists
-        const existingInstitution = window.storageManager.getInstitutions().find(i => 
-            i.name.toLowerCase() === institutionName.toLowerCase()
+        const existingInstitution = window.storageManager.getInstitutions().find(inst => 
+            inst.name.toLowerCase() === name.toLowerCase()
         );
 
         if (existingInstitution) {
-            window.utils.showToast('Institution with this name already exists', 'error');
+            Utils.showToast('Institution with this name already exists', 'error');
             return;
         }
 
-        try {
-            const institution = await window.storageManager.addInstitution({ 
-                name: institutionName, 
-                address: institutionAddress 
-            });
-            window.utils.showToast('Institution created successfully', 'success');
-            
+        const institutionData = {
+            name: Utils.sanitizeInput(name),
+            address: Utils.sanitizeInput(address)
+        };
+
+        const institution = await window.storageManager.addInstitution(institutionData);
+        if (institution) {
+            Utils.showToast('Institution created successfully', 'success');
             document.getElementById('createInstitutionForm').reset();
-            this.refresh();
-        } catch (error) {
-            console.error('Error creating institution:', error);
-            window.utils.showToast('Failed to create institution', 'error');
+            this.loadInstitutions();
+            this.updateInstitutionDropdown();
         }
     }
 
     async addStudent() {
-        const studentName = window.utils.sanitizeInput(document.getElementById('studentName').value);
+        const name = document.getElementById('studentName').value.trim();
         const institutionId = document.getElementById('studentInstitution').value;
         const gender = document.getElementById('studentGender').value;
-        const phone = window.utils.sanitizeInput(document.getElementById('studentPhone').value);
-        const guardianName = window.utils.sanitizeInput(document.getElementById('guardianName').value);
-        const guardianPhone = window.utils.sanitizeInput(document.getElementById('guardianPhone').value);
+        const phone = document.getElementById('studentPhone').value.trim();
+        const guardianName = document.getElementById('guardianName').value.trim();
+        const guardianPhone = document.getElementById('guardianPhone').value.trim();
         const batchId = document.getElementById('studentBatch').value;
 
-        if (!studentName || !institutionId || !gender || !phone || !guardianName || !guardianPhone || !batchId) {
-            window.utils.showToast('Please fill all required fields', 'error');
+        if (!name || !institutionId || !gender || !phone || !guardianName || !guardianPhone || !batchId) {
+            Utils.showToast('Please fill in all fields', 'error');
             return;
         }
 
-        // Validate phone numbers
-        if (!window.utils.validatePhone(phone)) {
-            window.utils.showToast('Please enter a valid student phone number', 'error');
+        if (!Utils.validatePhone(phone) || !Utils.validatePhone(guardianPhone)) {
+            Utils.showToast('Please enter valid phone numbers', 'error');
             return;
         }
 
-        if (!window.utils.validatePhone(guardianPhone)) {
-            window.utils.showToast('Please enter a valid guardian phone number', 'error');
-            return;
-        }
-
-        // Get enrolled courses
+        // Get enrolled courses with starting months
         const enrolledCourses = this.getEnrolledCourses();
-
+        
         if (enrolledCourses.length === 0) {
-            window.utils.showToast('Please select at least one course', 'error');
+            Utils.showToast('Please select at least one course', 'error');
             return;
         }
-
         const studentData = {
-            name: studentName,
+            name: Utils.sanitizeInput(name),
             institutionId,
             gender,
-            phone,
-            guardianName,
-            guardianPhone,
+            phone: Utils.sanitizeInput(phone),
+            guardianName: Utils.sanitizeInput(guardianName),
+            guardianPhone: Utils.sanitizeInput(guardianPhone),
             batchId,
             enrolledCourses
         };
 
-        try {
-            const student = await window.storageManager.addStudent(studentData);
-            window.utils.showToast(`Student added successfully with ID: ${student.student_id}`, 'success');
-            
+        const student = await window.storageManager.addStudent(studentData);
+        if (student) {
+            Utils.showToast(`Student added successfully with ID: ${student.studentId}`, 'success');
             document.getElementById('addStudentForm').reset();
-            this.updateCourseSelection(); // Reset course selection
-            this.refresh();
-        } catch (error) {
-            console.error('Error adding student:', error);
-            window.utils.showToast('Failed to add student', 'error');
-        }
-    }
-
-    getEnrolledCourses() {
-        const courseSelection = document.getElementById('courseSelection');
-        if (!courseSelection) return [];
-
-        const enrolledCourses = [];
-        const courseItems = courseSelection.querySelectorAll('.course-enrollment-item');
-
-        courseItems.forEach(item => {
-            const checkbox = item.querySelector('input[type="checkbox"]');
-            if (checkbox && checkbox.checked) {
-                const courseId = checkbox.value;
-                const startingMonthSelect = item.querySelector('.starting-month-select select');
-                const endingMonthSelect = item.querySelector('.ending-month-select select');
-                
-                const startingMonthId = startingMonthSelect ? startingMonthSelect.value : null;
-                const endingMonthId = endingMonthSelect ? endingMonthSelect.value : null;
-
-                if (startingMonthId) {
-                    enrolledCourses.push({
-                        courseId,
-                        startingMonthId,
-                        endingMonthId: endingMonthId || null
-                    });
-                }
-            }
-        });
-
-        return enrolledCourses;
-    }
-
-    updateCourseSelection() {
-        const batchId = document.getElementById('studentBatch').value;
-        const courseSelection = document.getElementById('courseSelection');
-
-        if (!batchId || !courseSelection) {
-            if (courseSelection) {
-                courseSelection.innerHTML = '<p>Please select a batch first</p>';
-            }
-            return;
-        }
-
-        const courses = window.storageManager.getCoursesByBatch(batchId);
-
-        if (courses.length === 0) {
-            courseSelection.innerHTML = '<p>No courses available for this batch</p>';
-            return;
-        }
-
-        courseSelection.innerHTML = courses.map(course => {
-            const months = window.storageManager.getMonthsByCourse(course.id)
-                .sort((a, b) => (a.month_number || 0) - (b.month_number || 0));
-
-            return `
-                <div class="course-enrollment-item">
-                    <div class="course-checkbox">
-                        <input type="checkbox" id="course_${course.id}" value="${course.id}" onchange="studentManager.toggleCourseSelection('${course.id}')">
-                        <label for="course_${course.id}">${course.name}</label>
-                    </div>
-                    <div class="starting-month-select" id="starting_${course.id}" style="display: none;">
-                        <label>Starting Month:</label>
-                        <select>
-                            <option value="">Select Starting Month</option>
-                            ${months.map(month => 
-                                `<option value="${month.id}">${month.name} (Month ${month.month_number || 'N/A'})</option>`
-                            ).join('')}
-                        </select>
-                        <label>Ending Month (Optional):</label>
-                        <select class="ending-month-select">
-                            <option value="">Select Ending Month (Optional)</option>
-                            ${months.map(month => 
-                                `<option value="${month.id}">${month.name} (Month ${month.month_number || 'N/A'})</option>`
-                            ).join('')}
-                        </select>
-                    </div>
-                </div>
-            `;
-        }).join('');
-    }
-
-    toggleCourseSelection(courseId) {
-        const checkbox = document.getElementById(`course_${courseId}`);
-        const monthSelect = document.getElementById(`starting_${courseId}`);
-
-        if (checkbox && monthSelect) {
-            if (checkbox.checked) {
-                monthSelect.style.display = 'block';
-            } else {
-                monthSelect.style.display = 'none';
-                // Reset month selections
-                const selects = monthSelect.querySelectorAll('select');
-                selects.forEach(select => select.value = '');
-            }
+            this.clearCourseSelection();
         }
     }
 
     refresh() {
         this.loadInstitutions();
-        this.updateDropdowns();
+        this.updateInstitutionDropdown();
+        this.updateBatchDropdown();
     }
 
     loadInstitutions() {
@@ -236,7 +136,7 @@ class StudentManagementManager {
         if (!institutionList) return;
 
         const institutions = window.storageManager.getInstitutions();
-
+        
         if (institutions.length === 0) {
             institutionList.innerHTML = '<p class="text-center">No institutions created yet</p>';
             return;
@@ -246,31 +146,174 @@ class StudentManagementManager {
             <div class="entity-item">
                 <div class="entity-info">
                     <div class="entity-name">${institution.name}</div>
-                    <div class="entity-details">${institution.address} | Created: ${window.utils.formatDate(institution.created_at)}</div>
+                    <div class="entity-details">${institution.address}</div>
                 </div>
                 <div class="entity-actions">
-                    <button class="btn btn-small btn-outline" onclick="studentManager.editInstitution('${institution.id}')">Edit</button>
-                    <button class="btn btn-small btn-danger" onclick="studentManager.deleteInstitution('${institution.id}')">Delete</button>
+                    <button class="btn btn-small btn-outline" onclick="studentManager.editInstitution('${institution.id}')">
+                        Edit
+                    </button>
+                    <button class="btn btn-small btn-danger" onclick="studentManager.deleteInstitution('${institution.id}')">
+                        Delete
+                    </button>
                 </div>
             </div>
         `).join('');
     }
 
-    updateDropdowns() {
-        // Update institution dropdown
+    updateInstitutionDropdown() {
         const institutionSelect = document.getElementById('studentInstitution');
-        if (institutionSelect) {
-            const institutions = window.storageManager.getInstitutions();
-            institutionSelect.innerHTML = '<option value="">Select Institution</option>' +
-                institutions.map(inst => `<option value="${inst.id}">${inst.name}</option>`).join('');
-        }
+        if (!institutionSelect) return;
 
-        // Update batch dropdown
+        const institutions = window.storageManager.getInstitutions();
+        institutionSelect.innerHTML = '<option value="">Select Institution</option>' +
+            institutions.map(institution => 
+                `<option value="${institution.id}">${institution.name}</option>`
+            ).join('');
+    }
+
+    updateBatchDropdown() {
         const batchSelect = document.getElementById('studentBatch');
-        if (batchSelect) {
-            const batches = window.storageManager.getBatches();
-            batchSelect.innerHTML = '<option value="">Select Batch</option>' +
-                batches.map(batch => `<option value="${batch.id}">${batch.name}</option>`).join('');
+        if (!batchSelect) return;
+
+        const batches = window.storageManager.getBatches();
+        batchSelect.innerHTML = '<option value="">Select Batch</option>' +
+            batches.map(batch => 
+                `<option value="${batch.id}">${batch.name}</option>`
+            ).join('');
+        
+        // Add event listener for batch change
+        batchSelect.addEventListener('change', () => {
+            this.updateCourseSelection();
+        });
+    }
+
+    updateCourseSelection() {
+        const batchId = document.getElementById('studentBatch').value;
+        const courseSelectionDiv = document.getElementById('courseSelection');
+        
+        if (!courseSelectionDiv) return;
+        
+        if (!batchId) {
+            courseSelectionDiv.innerHTML = '<p>Please select a batch first</p>';
+            return;
+        }
+        
+        const courses = window.storageManager.getCoursesByBatch(batchId);
+        
+        if (courses.length === 0) {
+            courseSelectionDiv.innerHTML = '<p>No courses available for this batch</p>';
+            return;
+        }
+        
+        courseSelectionDiv.innerHTML = courses.map(course => {
+            const months = window.storageManager.getMonthsByCourse(course.id);
+            const monthOptions = months.map(month => 
+                `<option value="${month.id}">${month.name}</option>`
+            ).join('');
+            
+            return `
+                <div class="course-enrollment-item">
+                    <div class="course-checkbox">
+                        <input type="checkbox" id="course_${course.id}" value="${course.id}" onchange="studentManager.toggleCourseSelection('${course.id}')">
+                        <label for="course_${course.id}">${course.name}</label>
+                    </div>
+                    <div class="starting-month-select" id="startingMonth_${course.id}" style="display: none;">
+                        <label for="startMonth_${course.id}">Starting Month:</label>
+                        <select id="startMonth_${course.id}">
+                            <option value="">Select Starting Month</option>
+                            ${monthOptions}
+                        </select>
+                        <label for="endMonth_${course.id}">Ending Month (Optional):</label>
+                        <select id="endMonth_${course.id}">
+                            <option value="">No End Date</option>
+                            ${monthOptions}
+                        </select>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    toggleCourseSelection(courseId) {
+        const checkbox = document.getElementById(`course_${courseId}`);
+        const startingMonthDiv = document.getElementById(`startingMonth_${courseId}`);
+        
+        if (checkbox.checked) {
+            startingMonthDiv.style.display = 'block';
+        } else {
+            startingMonthDiv.style.display = 'none';
+            document.getElementById(`startMonth_${courseId}`).value = '';
+        }
+    }
+
+    getEnrolledCourses() {
+        const enrolledCourses = [];
+        const courseCheckboxes = document.querySelectorAll('#courseSelection input[type="checkbox"]:checked');
+        
+        courseCheckboxes.forEach(checkbox => {
+            const courseId = checkbox.value;
+            const startingMonthId = document.getElementById(`startMonth_${courseId}`).value;
+            const endingMonthId = document.getElementById(`endMonth_${courseId}`).value;
+            
+            if (startingMonthId) {
+                const enrollment = {
+                    courseId,
+                    startingMonthId
+                };
+                
+                if (endingMonthId) {
+                    enrollment.endingMonthId = endingMonthId;
+                }
+                
+                enrolledCourses.push(enrollment);
+            }
+        });
+        
+        return enrolledCourses;
+    }
+
+    getEditEnrolledCourses() {
+        const enrolledCourses = [];
+        const courseCheckboxes = document.querySelectorAll('#editCourseSelection input[type="checkbox"]:checked');
+        
+        courseCheckboxes.forEach(checkbox => {
+            const courseId = checkbox.value;
+            const startingMonthId = document.getElementById(`editStartMonth_${courseId}`).value;
+            const endingMonthId = document.getElementById(`editEndMonth_${courseId}`).value;
+            
+            if (startingMonthId) {
+                const enrollment = {
+                    courseId,
+                    startingMonthId
+                };
+                
+                if (endingMonthId) {
+                    enrollment.endingMonthId = endingMonthId;
+                }
+                
+                enrolledCourses.push(enrollment);
+            }
+        });
+        
+        return enrolledCourses;
+    }
+
+    toggleEditCourseSelection(courseId) {
+        const checkbox = document.getElementById(`editCourse_${courseId}`);
+        const startingMonthDiv = document.getElementById(`editStartingMonth_${courseId}`);
+        
+        if (checkbox.checked) {
+            startingMonthDiv.style.display = 'block';
+        } else {
+            startingMonthDiv.style.display = 'none';
+            document.getElementById(`editStartMonth_${courseId}`).value = '';
+        }
+    }
+
+    clearCourseSelection() {
+        const courseSelectionDiv = document.getElementById('courseSelection');
+        if (courseSelectionDiv) {
+            courseSelectionDiv.innerHTML = '<p>Please select a batch first</p>';
         }
     }
 
@@ -278,80 +321,100 @@ class StudentManagementManager {
         const institution = window.storageManager.getInstitutionById(id);
         if (!institution) return;
 
-        const newName = prompt('Edit institution name:', institution.name);
-        const newAddress = prompt('Edit institution address:', institution.address);
+        const editForm = `
+            <form id="editInstitutionForm">
+                <div class="form-group">
+                    <label for="editInstitutionName">Institution Name</label>
+                    <input type="text" id="editInstitutionName" value="${institution.name}" required>
+                </div>
+                <div class="form-group">
+                    <label for="editInstitutionAddress">Institution Address</label>
+                    <textarea id="editInstitutionAddress" required>${institution.address}</textarea>
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary">Update Institution</button>
+                    <button type="button" class="btn btn-outline" onclick="navigationManager.closeModal(document.getElementById('editModal'))">Cancel</button>
+                </div>
+            </form>
+        `;
 
-        if (newName && newAddress && (newName !== institution.name || newAddress !== institution.address)) {
-            const sanitizedName = window.utils.sanitizeInput(newName);
-            const sanitizedAddress = window.utils.sanitizeInput(newAddress);
-            
-            // Check if new name already exists
-            const existingInstitution = window.storageManager.getInstitutions().find(i => 
-                i.name.toLowerCase() === sanitizedName.toLowerCase() && i.id !== id
-            );
+        window.navigationManager.showModal('editModal', 'Edit Institution', editForm);
 
-            if (existingInstitution) {
-                window.utils.showToast('Institution with this name already exists', 'error');
+        document.getElementById('editInstitutionForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const name = document.getElementById('editInstitutionName').value.trim();
+            const address = document.getElementById('editInstitutionAddress').value.trim();
+
+            if (!name || !address) {
+                Utils.showToast('Please fill in all fields', 'error');
                 return;
             }
 
-            window.storageManager.updateInstitution(id, { 
-                name: sanitizedName, 
-                address: sanitizedAddress 
+            const result = window.storageManager.updateInstitution(id, {
+                name: Utils.sanitizeInput(name),
+                address: Utils.sanitizeInput(address)
             });
-            window.utils.showToast('Institution updated successfully', 'success');
-            this.refresh();
-        }
-    }
 
-    async deleteInstitution(id) {
-        const institution = window.storageManager.getInstitutionById(id);
-        if (!institution) {
-            window.utils.showToast('Institution not found', 'error');
-            return;
-        }
-
-        window.utils.confirm(`Are you sure you want to delete "${institution.name}"?`, async () => {
-            try {
-                const result = await window.storageManager.deleteInstitution(id);
-                if (result.success) {
-                    window.utils.showToast('Institution deleted successfully', 'success');
-                    this.refresh();
-                } else {
-                    window.utils.showToast(result.message, 'error');
-                }
-            } catch (error) {
-                console.error('Error deleting institution:', error);
-                window.utils.showToast('Failed to delete institution', 'error');
+            if (result) {
+                Utils.showToast('Institution updated successfully', 'success');
+                window.navigationManager.closeModal(document.getElementById('editModal'));
+                this.loadInstitutions();
+                this.updateInstitutionDropdown();
             }
         });
     }
 
-    async editStudent(studentId) {
-        const student = await window.storageManager.getStudentById(studentId);
-        if (!student) {
-            window.utils.showToast('Student not found', 'error');
-            return;
-        }
+    deleteInstitution(id) {
+        const institution = window.storageManager.getInstitutionById(id);
+        if (!institution) return;
+
+        Utils.confirm(`Are you sure you want to delete "${institution.name}"?`, () => {
+            const result = window.storageManager.deleteInstitution(id);
+            if (result.success) {
+                Utils.showToast('Institution deleted successfully', 'success');
+                this.loadInstitutions();
+                this.updateInstitutionDropdown();
+            } else {
+                Utils.showToast(result.message, 'error');
+            }
+        });
+    }
+
+    editStudent(id) {
+        const student = window.storageManager.getStudentById(id);
+        if (!student) return;
+
+        const institutions = window.storageManager.getInstitutions();
+        const batches = window.storageManager.getBatches();
+        const allCourses = window.storageManager.getCoursesByBatch(student.batchId);
+        const enrolledCourseIds = (student.enrolledCourses || []).map(e => e.courseId);
 
         const editForm = `
             <form id="editStudentForm">
-                <div class="form-section-header">Personal Information</div>
                 <div class="form-row">
                     <div class="form-group">
                         <label for="editStudentName">Student Name</label>
                         <input type="text" id="editStudentName" value="${student.name}" required>
                     </div>
                     <div class="form-group">
+                        <label for="editStudentInstitution">Institution</label>
+                        <select id="editStudentInstitution" required>
+                            <option value="">Select Institution</option>
+                            ${institutions.map(inst => 
+                                `<option value="${inst.id}" ${inst.id === student.institutionId ? 'selected' : ''}>${inst.name}</option>`
+                            ).join('')}
+                        </select>
+                    </div>
+                    <div class="form-group">
                         <label for="editStudentGender">Gender</label>
                         <select id="editStudentGender" required>
+                            <option value="">Select Gender</option>
                             <option value="Male" ${student.gender === 'Male' ? 'selected' : ''}>Male</option>
                             <option value="Female" ${student.gender === 'Female' ? 'selected' : ''}>Female</option>
                             <option value="Custom" ${student.gender === 'Custom' ? 'selected' : ''}>Custom</option>
                         </select>
                     </div>
                 </div>
-                <div class="form-section-header">Contact Information</div>
                 <div class="form-row">
                     <div class="form-group">
                         <label for="editStudentPhone">Student Phone</label>
@@ -359,35 +422,62 @@ class StudentManagementManager {
                     </div>
                     <div class="form-group">
                         <label for="editGuardianName">Guardian Name</label>
-                        <input type="text" id="editGuardianName" value="${student.guardian_name}" required>
+                        <input type="text" id="editGuardianName" value="${student.guardianName}" required>
                     </div>
                     <div class="form-group">
                         <label for="editGuardianPhone">Guardian Phone</label>
-                        <input type="tel" id="editGuardianPhone" value="${student.guardian_phone}" required>
+                        <input type="tel" id="editGuardianPhone" value="${student.guardianPhone}" required>
                     </div>
                 </div>
-                <div class="form-section-header">Academic Information</div>
                 <div class="form-row">
-                    <div class="form-group">
-                        <label for="editStudentInstitution">Institution</label>
-                        <select id="editStudentInstitution" required>
-                            <option value="">Select Institution</option>
-                            ${window.storageManager.getInstitutions().map(inst => 
-                                `<option value="${inst.id}" ${inst.id === student.institution_id ? 'selected' : ''}>${inst.name}</option>`
-                            ).join('')}
-                        </select>
-                    </div>
                     <div class="form-group">
                         <label for="editStudentBatch">Batch</label>
                         <select id="editStudentBatch" required>
                             <option value="">Select Batch</option>
-                            ${window.storageManager.getBatches().map(batch => 
-                                `<option value="${batch.id}" ${batch.id === student.batch_id ? 'selected' : ''}>${batch.name}</option>`
+                            ${batches.map(batch => 
+                                `<option value="${batch.id}" ${batch.id === student.batchId ? 'selected' : ''}>${batch.name}</option>`
                             ).join('')}
                         </select>
                     </div>
                 </div>
-                <div class="modal-actions">
+                <div class="form-group">
+                    <label>Course Enrollment</label>
+                    <div id="editCourseSelection" class="course-selection">
+                        ${allCourses.map(course => {
+                            const isEnrolled = enrolledCourseIds.includes(course.id);
+                            const enrollment = isEnrolled ? student.enrolledCourses.find(e => e.courseId === course.id) : null;
+                            const months = window.storageManager.getMonthsByCourse(course.id);
+                            const monthOptions = months.map(month => 
+                                `<option value="${month.id}" ${enrollment && enrollment.startingMonthId === month.id ? 'selected' : ''}>${month.name}</option>`
+                            ).join('');
+                            const endMonthOptions = months.map(month => 
+                                `<option value="${month.id}" ${enrollment && enrollment.endingMonthId === month.id ? 'selected' : ''}>${month.name}</option>`
+                            ).join('');
+                            
+                            return `
+                                <div class="course-enrollment-item">
+                                    <div class="course-checkbox">
+                                        <input type="checkbox" id="editCourse_${course.id}" value="${course.id}" ${isEnrolled ? 'checked' : ''} onchange="studentManager.toggleEditCourseSelection('${course.id}')">
+                                        <label for="editCourse_${course.id}">${course.name}</label>
+                                    </div>
+                                    <div class="starting-month-select" id="editStartingMonth_${course.id}" style="display: ${isEnrolled ? 'block' : 'none'};">
+                                        <label for="editStartMonth_${course.id}">Starting Month:</label>
+                                        <select id="editStartMonth_${course.id}">
+                                            <option value="">Select Starting Month</option>
+                                            ${monthOptions}
+                                        </select>
+                                        <label for="editEndMonth_${course.id}">Ending Month (Optional):</label>
+                                        <select id="editEndMonth_${course.id}">
+                                            <option value="">No End Date</option>
+                                            ${endMonthOptions}
+                                        </select>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+                <div class="form-group">
                     <button type="submit" class="btn btn-primary">Update Student</button>
                     <button type="button" class="btn btn-outline" onclick="navigationManager.closeModal(document.getElementById('editModal'))">Cancel</button>
                 </div>
@@ -398,60 +488,61 @@ class StudentManagementManager {
 
         document.getElementById('editStudentForm').addEventListener('submit', (e) => {
             e.preventDefault();
-            this.updateStudent(studentId);
+            const name = document.getElementById('editStudentName').value.trim();
+            const institutionId = document.getElementById('editStudentInstitution').value;
+            const gender = document.getElementById('editStudentGender').value;
+            const phone = document.getElementById('editStudentPhone').value.trim();
+            const guardianName = document.getElementById('editGuardianName').value.trim();
+            const guardianPhone = document.getElementById('editGuardianPhone').value.trim();
+            const batchId = document.getElementById('editStudentBatch').value;
+            const enrolledCourses = this.getEditEnrolledCourses();
+
+            if (!name || !institutionId || !gender || !phone || !guardianName || !guardianPhone || !batchId) {
+                Utils.showToast('Please fill in all fields', 'error');
+                return;
+            }
+
+            if (!Utils.validatePhone(phone) || !Utils.validatePhone(guardianPhone)) {
+                Utils.showToast('Please enter valid phone numbers', 'error');
+                return;
+            }
+
+            if (enrolledCourses.length === 0) {
+                Utils.showToast('Please select at least one course', 'error');
+                return;
+            }
+            const result = window.storageManager.updateStudent(id, {
+                name: Utils.sanitizeInput(name),
+                institutionId,
+                gender,
+                phone: Utils.sanitizeInput(phone),
+                guardianName: Utils.sanitizeInput(guardianName),
+                guardianPhone: Utils.sanitizeInput(guardianPhone),
+                batchId,
+                enrolledCourses
+            });
+
+            if (result) {
+                Utils.showToast('Student updated successfully', 'success');
+                window.navigationManager.closeModal(document.getElementById('editModal'));
+            }
         });
     }
 
-    async updateStudent(studentId) {
-        const name = window.utils.sanitizeInput(document.getElementById('editStudentName').value);
-        const gender = document.getElementById('editStudentGender').value;
-        const phone = window.utils.sanitizeInput(document.getElementById('editStudentPhone').value);
-        const guardianName = window.utils.sanitizeInput(document.getElementById('editGuardianName').value);
-        const guardianPhone = window.utils.sanitizeInput(document.getElementById('editGuardianPhone').value);
-        const institutionId = document.getElementById('editStudentInstitution').value;
-        const batchId = document.getElementById('editStudentBatch').value;
+    deleteStudent(id) {
+        const student = window.storageManager.getStudentById(id);
+        if (!student) return;
 
-        if (!name || !gender || !phone || !guardianName || !guardianPhone || !institutionId || !batchId) {
-            window.utils.showToast('Please fill all required fields', 'error');
-            return;
-        }
-
-        // Validate phone numbers
-        if (!window.utils.validatePhone(phone)) {
-            window.utils.showToast('Please enter a valid student phone number', 'error');
-            return;
-        }
-
-        if (!window.utils.validatePhone(guardianPhone)) {
-            window.utils.showToast('Please enter a valid guardian phone number', 'error');
-            return;
-        }
-
-        const updates = {
-            name,
-            gender,
-            phone,
-            guardianName,
-            guardianPhone,
-            institutionId,
-            batchId
-        };
-
-        try {
-            await window.storageManager.updateStudent(studentId, updates);
-            window.utils.showToast('Student updated successfully', 'success');
-            window.navigationManager.closeModal(document.getElementById('editModal'));
-            
-            // Refresh students database if it's active
-            if (window.studentsDatabaseManager) {
-                window.studentsDatabaseManager.applyFilters();
+        Utils.confirm(`Are you sure you want to delete "${student.name}"?`, () => {
+            const result = window.storageManager.deleteStudent(id);
+            if (result.success) {
+                Utils.showToast('Student deleted successfully', 'success');
+            } else {
+                Utils.showToast(result.message, 'error');
             }
-        } catch (error) {
-            console.error('Error updating student:', error);
-            window.utils.showToast('Failed to update student', 'error');
-        }
+        });
     }
 }
 
-// Global student manager instance
+// Global student management manager instance
 window.studentManager = new StudentManagementManager();

@@ -57,8 +57,8 @@ class InvoiceManager {
                         <span>Invoice #: ${payment.invoiceNumber}</span>
                     </div>
                     <div class="invoice-details-row">
-                        <span>Date: ${window.utils.formatDate(payment.createdAt)}</span>
-                        <span>Time: ${window.utils.formatTime(payment.createdAt)}</span>
+                        <span>Date: ${Utils.formatDate(payment.createdAt)}</span>
+                        <span>Time: ${Utils.formatTime(payment.createdAt)}</span>
                     </div>
                 </div>
 
@@ -102,7 +102,6 @@ class InvoiceManager {
                                 <small>(${month.courseName})</small>
                             </span>
                             <span class="item-amount">${Utils.formatCurrency(month.payment)}</span>
-                           <span class="item-amount">${window.utils.formatCurrency(month.payment)}</span>
                         </div>
                     `).join('')}
                 </div>
@@ -112,26 +111,26 @@ class InvoiceManager {
                     <div class="items-divider"></div>
                     <div class="total-row">
                         <span class="total-label">Subtotal:</span>
-                        <span class="total-amount">${window.utils.formatCurrency(payment.totalAmount)}</span>
+                        <span class="total-amount">${Utils.formatCurrency(payment.totalAmount)}</span>
                     </div>
                     ${payment.discountAmount > 0 ? `
                     <div class="total-row discount-row">
                         <span class="total-label">Discount ${payment.discountType === 'percentage' ? '(' + payment.discountAmount + '%)' : '(Fixed)'}:</span>
-                        <span class="total-amount">-${window.utils.formatCurrency(payment.discountAmount)}</span>
+                        <span class="total-amount">-${Utils.formatCurrency(payment.discountAmount)}</span>
                     </div>
                     <div class="total-row">
                         <span class="total-label">After Discount:</span>
-                        <span class="total-amount">${window.utils.formatCurrency(payment.discountedAmount)}</span>
+                        <span class="total-amount">${Utils.formatCurrency(payment.discountedAmount)}</span>
                     </div>
                     ` : ''}
                     <div class="total-row paid-row">
                         <span class="total-label">PAID:</span>
-                        <span class="total-amount">${window.utils.formatCurrency(payment.paidAmount)}</span>
+                        <span class="total-amount">${Utils.formatCurrency(payment.paidAmount)}</span>
                     </div>
                     ${payment.dueAmount > 0 ? `
                     <div class="total-row due-row">
                         <span class="total-label">DUE:</span>
-                        <span class="total-amount">${window.utils.formatCurrency(payment.dueAmount)}</span>
+                        <span class="total-amount">${Utils.formatCurrency(payment.dueAmount)}</span>
                     </div>
                     ` : ''}
                     <div class="items-divider"></div>

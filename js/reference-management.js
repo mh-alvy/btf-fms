@@ -36,7 +36,7 @@ class ReferenceManagementManager {
         const referenceText = document.getElementById('newReference').value.trim();
         
         if (!referenceText) {
-            window.utils.showToast('Please enter a reference option', 'error');
+            Utils.showToast('Please enter a reference option', 'error');
             return;
         }
 
@@ -44,14 +44,14 @@ class ReferenceManagementManager {
         
         // Check if reference already exists
         if (references.includes(referenceText)) {
-            window.utils.showToast('Reference option already exists', 'error');
+            Utils.showToast('Reference option already exists', 'error');
             return;
         }
 
         references.push(referenceText);
         this.saveReferences(references);
         
-        window.utils.showToast('Reference option added successfully', 'success');
+        Utils.showToast('Reference option added successfully', 'success');
         document.getElementById('addReferenceForm').reset();
         this.refresh();
         this.updateReferenceDropdowns();
@@ -61,7 +61,7 @@ class ReferenceManagementManager {
         const receivedByText = document.getElementById('newReceivedBy').value.trim();
         
         if (!receivedByText) {
-            window.utils.showToast('Please enter a receiver name', 'error');
+            Utils.showToast('Please enter a receiver name', 'error');
             return;
         }
 
@@ -69,14 +69,14 @@ class ReferenceManagementManager {
         
         // Check if option already exists
         if (receivedByOptions.includes(receivedByText)) {
-            window.utils.showToast('Receiver option already exists', 'error');
+            Utils.showToast('Receiver option already exists', 'error');
             return;
         }
 
         receivedByOptions.push(receivedByText);
         this.saveReceivedByOptions(receivedByOptions);
         
-        window.utils.showToast('Receiver option added successfully', 'success');
+        Utils.showToast('Receiver option added successfully', 'success');
         document.getElementById('addReceivedByForm').reset();
         this.refresh();
         this.updateReceivedByDropdowns();
@@ -189,17 +189,17 @@ class ReferenceManagementManager {
         
         const newReference = prompt('Edit reference option:', currentReference);
         if (newReference && newReference !== currentReference) {
-            const sanitizedReference = window.utils.sanitizeInput(newReference);
+            const sanitizedReference = Utils.sanitizeInput(newReference);
             
             // Check if new reference already exists
             if (references.includes(sanitizedReference)) {
-                window.utils.showToast('Reference option already exists', 'error');
+                Utils.showToast('Reference option already exists', 'error');
                 return;
             }
 
             references[index] = sanitizedReference;
             this.saveReferences(references);
-            window.utils.showToast('Reference option updated successfully', 'success');
+            Utils.showToast('Reference option updated successfully', 'success');
             this.refresh();
         }
     }
@@ -210,17 +210,17 @@ class ReferenceManagementManager {
         
         const newOption = prompt('Edit receiver option:', currentOption);
         if (newOption && newOption !== currentOption) {
-            const sanitizedOption = window.utils.sanitizeInput(newOption);
+            const sanitizedOption = Utils.sanitizeInput(newOption);
             
             // Check if new option already exists
             if (options.includes(sanitizedOption)) {
-                window.utils.showToast('Receiver option already exists', 'error');
+                Utils.showToast('Receiver option already exists', 'error');
                 return;
             }
 
             options[index] = sanitizedOption;
             this.saveReceivedByOptions(options);
-            window.utils.showToast('Receiver option updated successfully', 'success');
+            Utils.showToast('Receiver option updated successfully', 'success');
             this.refresh();
         }
     }
@@ -229,10 +229,10 @@ class ReferenceManagementManager {
         const references = this.getReferences();
         const referenceToDelete = references[index];
         
-        window.utils.confirm(`Are you sure you want to delete "${referenceToDelete}"?`, () => {
+        Utils.confirm(`Are you sure you want to delete "${referenceToDelete}"?`, () => {
             references.splice(index, 1);
             this.saveReferences(references);
-            window.utils.showToast('Reference option deleted successfully', 'success');
+            Utils.showToast('Reference option deleted successfully', 'success');
             this.refresh();
         });
     }
@@ -241,10 +241,10 @@ class ReferenceManagementManager {
         const options = this.getReceivedByOptions();
         const optionToDelete = options[index];
         
-        window.utils.confirm(`Are you sure you want to delete "${optionToDelete}"?`, () => {
+        Utils.confirm(`Are you sure you want to delete "${optionToDelete}"?`, () => {
             options.splice(index, 1);
             this.saveReceivedByOptions(options);
-            window.utils.showToast('Receiver option deleted successfully', 'success');
+            Utils.showToast('Receiver option deleted successfully', 'success');
             this.refresh();
         });
     }

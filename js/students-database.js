@@ -18,7 +18,7 @@ class StudentsDatabaseManager {
         // Search input with debounce
         const searchInput = document.getElementById('dbSearchInput');
         if (searchInput) {
-            searchInput.addEventListener('input', window.utils.debounce(() => {
+            searchInput.addEventListener('input', Utils.debounce(() => {
                 this.applyFilters();
             }, 300));
         }
@@ -366,7 +366,7 @@ class StudentsDatabaseManager {
                             </div>
                             <div class="detail-item">
                                 <span class="detail-label">Joined:</span>
-                                <span class="detail-value">${window.utils.formatDate(student.createdAt)}</span>
+                                <span class="detail-value">${Utils.formatDate(student.createdAt)}</span>
                             </div>
                         </div>
                         
@@ -386,15 +386,15 @@ class StudentsDatabaseManager {
                             <h5>Payment Information</h5>
                             <div class="detail-item">
                                 <span class="detail-label">Total Due:</span>
-                                <span class="detail-value">${window.utils.formatCurrency(totalDue)}</span>
+                                <span class="detail-value">${Utils.formatCurrency(totalDue)}</span>
                             </div>
                             <div class="detail-item">
                                 <span class="detail-label">Total Paid:</span>
-                                <span class="detail-value">${window.utils.formatCurrency(totalPaid)}</span>
+                                <span class="detail-value">${Utils.formatCurrency(totalPaid)}</span>
                             </div>
                             <div class="detail-item">
                                 <span class="detail-label">Remaining:</span>
-                                <span class="detail-value ${unpaidDue > 0 ? 'text-danger' : 'text-success'}">${window.utils.formatCurrency(unpaidDue)}</span>
+                                <span class="detail-value ${unpaidDue > 0 ? 'text-danger' : 'text-success'}">${Utils.formatCurrency(unpaidDue)}</span>
                             </div>
                         </div>
                     </div>
@@ -476,11 +476,11 @@ class StudentsDatabaseManager {
         });
 
         if (totalRevenueElement) {
-            totalRevenueElement.textContent = window.utils.formatCurrency(totalRevenue);
+            totalRevenueElement.textContent = Utils.formatCurrency(totalRevenue);
         }
 
         if (pendingDuesElement) {
-            pendingDuesElement.textContent = window.utils.formatCurrency(totalPendingDues);
+            pendingDuesElement.textContent = Utils.formatCurrency(totalPendingDues);
         }
     }
 
@@ -494,12 +494,12 @@ class StudentsDatabaseManager {
         document.getElementById('dbGenderFilter').value = '';
         
         this.applyFilters();
-        window.utils.showToast('Filters cleared', 'success');
+        Utils.showToast('Filters cleared', 'success');
     }
 
     exportData() {
         if (this.filteredStudents.length === 0) {
-            window.utils.showToast('No data to export', 'warning');
+            Utils.showToast('No data to export', 'warning');
             return;
         }
 
@@ -566,13 +566,13 @@ class StudentsDatabaseManager {
                 'Total Paid': totalPaid,
                 'Remaining Due': unpaidDue,
                 'Payment Status': paymentStatus,
-                'Joined Date': window.utils.formatDate(student.createdAt)
+                'Joined Date': Utils.formatDate(student.createdAt)
             };
         });
 
         const filename = `students_database_${new Date().toISOString().split('T')[0]}.csv`;
-        window.utils.exportToCSV(exportData, filename);
-        window.utils.showToast('Data exported successfully', 'success');
+        Utils.exportToCSV(exportData, filename);
+        Utils.showToast('Data exported successfully', 'success');
     }
 
     viewPaymentHistory(studentId) {
@@ -593,9 +593,9 @@ class StudentsDatabaseManager {
                                 <span class="payment-date">${Utils.formatDateTime(payment.createdAt)}</span>
                             </div>
                             <div class="payment-details">
-                                <p><strong>Amount Paid:</strong> ${window.utils.formatCurrency(payment.paidAmount)}</p>
-                                <p><strong>Due Amount:</strong> ${window.utils.formatCurrency(payment.dueAmount)}</p>
-                                ${payment.discountAmount > 0 ? `<p><strong>Discount:</strong> ${window.utils.formatCurrency(payment.discountAmount)}</p>` : ''}
+                                <p><strong>Amount Paid:</strong> ${Utils.formatCurrency(payment.paidAmount)}</p>
+                                <p><strong>Due Amount:</strong> ${Utils.formatCurrency(payment.dueAmount)}</p>
+                                ${payment.discountAmount > 0 ? `<p><strong>Discount:</strong> ${Utils.formatCurrency(payment.discountAmount)}</p>` : ''}
                                 <p><strong>Received By:</strong> ${payment.receivedBy}</p>
                                 ${payment.reference ? `<p><strong>Reference:</strong> ${payment.reference}</p>` : ''}
                             </div>
@@ -614,17 +614,17 @@ class StudentsDatabaseManager {
     deleteStudent(studentId) {
         const student = window.storageManager.getStudentById(studentId);
         if (!student) {
-            window.utils.showToast('Student not found', 'error');
+            Utils.showToast('Student not found', 'error');
             return;
         }
 
-        window.utils.confirm(`Are you sure you want to delete "${student.name}" (${student.studentId})? This action cannot be undone and will also remove all payment records for this student.`, () => {
+        Utils.confirm(`Are you sure you want to delete "${student.name}" (${student.studentId})? This action cannot be undone and will also remove all payment records for this student.`, () => {
             const result = window.storageManager.deleteStudent(studentId);
             if (result.success) {
-                window.utils.showToast('Student deleted successfully', 'success');
+                Utils.showToast('Student deleted successfully', 'success');
                 this.applyFilters(); // Refresh the list
             } else {
-                window.utils.showToast(result.message, 'error');
+                Utils.showToast(result.message, 'error');
             }
         });
     }
