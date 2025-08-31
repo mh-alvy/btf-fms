@@ -63,7 +63,7 @@ class AuthManager {
         try {
             for (const user of defaultUsers) {
                 // Check if user already exists
-                const { data: existingUser } = await supabase
+                const { data: existingUser, error: checkError } = await supabase
                     .from('users')
                     .select('id')
                     .eq('username', user.username)
