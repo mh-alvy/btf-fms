@@ -1,6 +1,4 @@
 // Main application initialization
-import './firebase-config.js';
-import './firestore-storage.js';
 import './utils.js';
 import './auth.js';
 import './navigation.js';
@@ -47,7 +45,6 @@ class App {
         
         // Initialize other components
         this.initializeThemeToggle();
-        this.initializeLogout();
         
         console.log('Application initialized successfully');
     }
@@ -76,15 +73,6 @@ class App {
         }
     }
 
-    initializeLogout() {
-        const logoutBtn = document.getElementById('logoutBtn');
-        if (logoutBtn) {
-            logoutBtn.addEventListener('click', () => {
-                this.logout();
-            });
-        }
-    }
-
     checkUserSession() {
         const currentUser = window.authManager?.getCurrentUser();
         console.log('Checking user session:', currentUser);
@@ -99,41 +87,29 @@ class App {
     initializeLoginForm() {
         console.log('Initializing login form...');
         
-        const loginButton = document.getElementById('loginButton');
-        
-        if (!loginButton) {
-            console.error('Login button not found');
-            return;
-        }
-
-        // Remove any existing event listeners by cloning the button
-        const newLoginButton = loginButton.cloneNode(true);
-        loginButton.parentNode.replaceChild(newLoginButton, loginButton);
-
-        // Add single click listener
-        newLoginButton.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            console.log('Login button clicked, handling login...');
-            this.handleLogin();
-            return false;
+        // Use event delegation to handle login button clicks
+        document.addEventListener('click', (e) => {
+            if (e.target && e.target.id === 'loginButton') {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('Login button clicked via delegation');
+                this.handleLogin();
+                return false;
+            }
         });
         
-        // Also handle Enter key press on password field
-        const passwordInput = document.getElementById('password');
-        if (passwordInput) {
-            passwordInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    console.log('Enter key pressed, handling login...');
-                    this.handleLogin();
-                    return false;
-                }
-            });
-        }
+        // Handle Enter key in password field
+        document.addEventListener('keypress', (e) => {
+            if (e.target && e.target.id === 'password' && e.key === 'Enter') {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('Enter key pressed in password field');
+                this.handleLogin();
+                return false;
+            }
+        });
         
-        console.log('Login button event listeners added');
+        console.log('Login form event delegation set up');
     }
 
     handleLogin() {
@@ -186,7 +162,7 @@ class App {
             if (result.success) {
                 this.currentUser = result.user;
                 console.log('Login successful:', result.user);
-                console.log(`Welcome back, ${result.user.username}!`);
+                alert(`Welcome back, ${result.user.username}!`);
                 
                 // Clear form
                 usernameInput.value = '';
